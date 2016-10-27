@@ -282,10 +282,12 @@ public class BrowserProfile: Profile {
         log.debug("Shutting down profile.")
 
         if self.dbCreated {
+            log.info("Shutting down browser DB.");
             db.forceClose()
         }
 
         if self.loginsDBCreated {
+            log.info("Shutting down logins DB.");
             loginsDB.forceClose()
         }
     }

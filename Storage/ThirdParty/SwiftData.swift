@@ -57,7 +57,7 @@ public class SwiftData {
     static var ReuseConnections = true
 
     /// For thread-safe access to the shared connection.
-    private let sharedConnectionQueue: dispatch_queue_t
+    public let sharedConnectionQueue: dispatch_queue_t
 
     /// Shared connection to this database.
     private var sharedConnection: ConcreteSQLiteDBConnection?
@@ -185,9 +185,28 @@ public class SwiftData {
     /// Don't use this unless you know what you're doing. The deinitializer
     /// should be used to achieve refcounting semantics.
     func forceClose() {
+        let conn = self.sharedConnection!
+        dispatch_async(sharedConnectionQueue) {
+            log.info("Waiting another few seconds.")
+            sleep(3);
+        }
         dispatch_sync(sharedConnectionQueue) {
+            if (self.closed) {
+                log.warning("Already closed!")
+            }
             self.closed = true
+            log.info("Nilling out shared connection on thread \(NSThread.currentThread()).")
             self.sharedConnection = nil
+        }
+        log.info("Doing some writes with our captured connection.")
+        for x in 1...30 {
+            dispatch_async(sharedConnectionQueue) {
+                log.info("Doing write \(x) with our captured connection.")
+                sleep(10)
+                conn.executeChange("CREATE TABLE IF NOT EXISTS terrible (x INTEGER)")
+                conn.executeChange("INSERT INTO terrible VALUES (5), (6)")
+                log.info("Done with that.")
+            }
         }
     }
 
@@ -399,6 +418,7 @@ public class ConcreteSQLiteDBConnection: SQLiteDBConnection {
     }
 
     private func prepareShared() {
+        pragma("synchronous=FULL", factory: StringFactory)
         if SwiftData.EnableForeignKeys {
             pragma("foreign_keys=ON", factory: IntFactory)
         }
@@ -524,6 +544,7 @@ public class ConcreteSQLiteDBConnection: SQLiteDBConnection {
     deinit {
         log.debug("deinit: closing connection on thread \(NSThread.currentThread()).")
         dispatch_sync(self.queue) {
+            log.info("Closing connection.")
             self.closeCustomConnection()
         }
     }
@@ -600,6 +621,7 @@ public class ConcreteSQLiteDBConnection: SQLiteDBConnection {
             return nil
         }
 
+        sleep(4);
         let status = immediately ? sqlite3_close(db) : sqlite3_close_v2(db)
 
         // Note that if we use sqlite3_close_v2, this will still return SQLITE_OK even if

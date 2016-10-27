@@ -32,7 +32,7 @@ protocol Queryable {
 // Version 6 - Visit timestamps are now microseconds.
 // Version 7 - Eliminate most tables. See BrowserTable instead.
 public class BrowserDB {
-    private let db: SwiftData
+    public let db: SwiftData
     // XXX: Increasing this should blow away old history, since we currently don't support any upgrades.
     private let Version: Int = 7
     private let files: FileAccessor
@@ -388,7 +388,7 @@ extension BrowserDB {
 }
 
 extension BrowserDB: Changeable {
-    func run(sql: String, withArgs args: Args? = nil) -> Success {
+    public func run(sql: String, withArgs args: Args? = nil) -> Success {
         return run([(sql, args)])
     }
 

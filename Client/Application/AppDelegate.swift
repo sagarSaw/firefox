@@ -348,6 +348,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Workaround for crashing in the background when <select> popovers are visible (rdar://24571325).
         let jsBlurSelect = "if (document.activeElement && document.activeElement.tagName === 'SELECT') { document.activeElement.blur(); }"
         tabManager.selectedTab?.webView?.evaluateJavaScript(jsBlurSelect, completionHandler: nil)
+
+        log.info("Queuing up a slow op.")
+        let queue = (self.profile as! BrowserProfile).db.db.sharedConnectionQueue
+        dispatch_async(queue) {
+            sleep(5);
+        }
         syncOnDidEnterBackground(application: application)
 
         let elapsed = Int(NSDate().timeIntervalSince1970) - foregroundStartTime
@@ -360,23 +366,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
+        log.info("In AppDelegate.syncOnDidEnterBackground.")
         profile.syncManager.applicationDidEnterBackground()
 
         var taskId: UIBackgroundTaskIdentifier = 0
         taskId = application.beginBackgroundTaskWithExpirationHandler { _ in
             log.warning("Running out of background time, but we have a profile shutdown pending.")
             profile.shutdown()
+            log.info("Ending background task.")
             application.endBackgroundTask(taskId)
         }
 
         if profile.hasSyncableAccount() {
             let backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
             profile.syncManager.syncEverything().uponQueue(backgroundQueue) { _ in
+                log.info("Shutting down profile after sync.")
                 profile.shutdown()
+                log.info("Ending background task after sync.")
                 application.endBackgroundTask(taskId)
             }
         } else {
+            log.info("Shutting down profile not after sync.")
             profile.shutdown()
+            log.info("Ending background task not after sync.")
             application.endBackgroundTask(taskId)
         }
     }
