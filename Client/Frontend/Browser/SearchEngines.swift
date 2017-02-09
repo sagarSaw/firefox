@@ -178,19 +178,23 @@ class SearchEngines {
     /// identifier must be a known one that is guaranteed to exist in the SearchPlugins directory.
     class func directoriesForLanguageIdentifier(languageIdentifier: String, basePath: NSString, fallbackIdentifier: String) -> [String] {
         var directories = [String]()
-        let components = languageIdentifier.componentsSeparatedByString("-")
-        if components.count == 1 {
-            // zh
-            directories.append(languageIdentifier)
-        } else if components.count == 2 {
-            // zh-CN
-            directories.append(languageIdentifier)
-            directories.append(components[0])
-        } else if components.count == 3 {
-            directories.append(languageIdentifier)
-            directories.append(components[0] + "-" + components[2])
-            directories.append(components[0])
+
+        if !languageIdentifier.isEmpty {
+            let components = languageIdentifier.componentsSeparatedByString("-")
+            if components.count == 1 {
+                // zh
+                directories.append(languageIdentifier)
+            } else if components.count == 2 {
+                // zh-CN
+                directories.append(languageIdentifier)
+                directories.append(components[0])
+            } else if components.count == 3 {
+                directories.append(languageIdentifier)
+                directories.append(components[0] + "-" + components[2])
+                directories.append(components[0])
+            }
         }
+
         if !directories.contains(fallbackIdentifier) {
             directories.append(fallbackIdentifier)
         }
@@ -207,7 +211,7 @@ class SearchEngines {
     // These exceptions can go away when we drop iOS 8 or when we start using a better mechanism for search
     // engine selection that is not based on language identifier.
     class func languageIdentifierForSearchEngines() -> String {
-        let languageIdentifier = NSLocale.preferredLanguages().first!
+        let languageIdentifier = NSLocale.preferredLanguages().first ?? "en-US"
         switch languageIdentifier {
             case "zh-Hans":
                 return "zh-Hans-CN"
@@ -220,29 +224,24 @@ class SearchEngines {
 
     /// Get all bundled (not custom) search engines, with the default search engine first,
     /// but the others in no particular order.
-    class func getUnorderedBundledEngines() -> [OpenSearchEngine] {
+    class func getUnorderedBundledEngines(languageIdentifier languageIdentifier: String) -> [OpenSearchEngine] {
         let pluginBasePath: NSString = (NSBundle.mainBundle().resourcePath! as NSString).stringByAppendingPathComponent("SearchPlugins")
-        let languageIdentifier = languageIdentifierForSearchEngines()
-        let fallbackDirectory: NSString = pluginBasePath.stringByAppendingPathComponent("en")
+        let fallbackDirectory = pluginBasePath.stringByAppendingPathComponent("en")
 
-        var directory: String?
+        var searchDirectory: String = fallbackDirectory
         for path in directoriesForLanguageIdentifier(languageIdentifier, basePath: pluginBasePath, fallbackIdentifier: "en") {
             if NSFileManager.defaultManager().fileExistsAtPath(path) {
-                directory = path
+                searchDirectory = path
                 break
             }
         }
 
-        // This cannot happen if we include the fallback, but if it does we return no engines at all
-        guard let searchDirectory = directory else {
+        let index = (searchDirectory as NSString).stringByAppendingPathComponent("list.txt")
+        guard let listFile = try? String(contentsOfFile: index, encoding: NSUTF8StringEncoding) else {
             return []
         }
 
-        let index = (searchDirectory as NSString).stringByAppendingPathComponent("list.txt")
-        let listFile = try? String(contentsOfFile: index, encoding: NSUTF8StringEncoding)
-        assert(listFile != nil, "Read the list of search engines")
-
-        let engineNames = listFile!
+        let engineNames = listFile
             .stringByTrimmingCharactersInSet(NSCharacterSet.newlineCharacterSet())
             .componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
 
@@ -275,7 +274,7 @@ class SearchEngines {
 
     /// Get all known search engines, possibly as ordered by the user.
     private func getOrderedEngines() -> [OpenSearchEngine] {
-        let unorderedEngines = customEngines + SearchEngines.getUnorderedBundledEngines()
+        let unorderedEngines = customEngines + SearchEngines.getUnorderedBundledEngines(languageIdentifier: SearchEngines.languageIdentifierForSearchEngines())
 
         guard let orderedEngineNames = prefs.stringArrayForKey(OrderedEngineNames) else {
             // We haven't persisted the engine order, so return whatever order we got from disk.

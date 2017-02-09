@@ -174,4 +174,29 @@ class SearchEnginesTests: XCTestCase {
             ["/tmp/zh-Hans-CN", "/tmp/zh-CN", "/tmp/zh", "/tmp/en"]
         )
     }
+
+    // Make sure that bad language identifiers do not return any directories at all, except for the fallback
+    func testDirectoriesForInvalidLanguageIdentifier() {
+        for languageIdentifier in ["", "-", "_", "foo", "foo/bar", "$foo", "foo_bar", "../../../../etc/passwd", "-foo", "_bar", "I like cheese"] {
+            XCTAssertEqual(SearchEngines.directoriesForLanguageIdentifier(languageIdentifier, basePath: "/tmp", fallbackIdentifier: "en"), ["/tmp/en"])
+        }
+    }
+
+    // Test getUnorderedBundledEngines against all the locales we ship with. To make sure they all parse correctly.
+    func testGetUnorderedBundledSearchEnginesAgainstShippingSearchEngines() {
+        let languageIdentifiers = ["ar", "as", "az", "be", "bn-IN", "br", "ca", "cs", "cy", "da", "de", "dsb", "el", "en", "en-GB", "en-ZA", "eo", "es-AR", "es-CL", "es-ES", "es-MX", "et", "eu", "fa", "ff", "fi", "fr", "fy-NL", "ga-IE", "gd", "gl", "gu-IN", "he", "hi-IN", "hr", "hsb", "hu", "hy-AM", "id", "is", "it", "ja", "ka", "kk", "kn", "ko", "lo", "lt", "lv", "ml", "mr", "ms", "my", "nb-NO", "nl", "nn-NO", "or", "pl", "pt-BR", "pt-PT", "rm", "ro", "ru", "sk", "sl", "sq", "sr", "sv-SE", "ta", "te", "th", "tr", "uk", "ur", "uz", "zh-CN", "zh-TW"]
+        for languageIdentifier in languageIdentifiers {
+            let engines = SearchEngines.getUnorderedBundledEngines(languageIdentifier: languageIdentifier)
+            XCTAssert(engines.count != 0)
+        }
+    }
+
+    // Throw random invalid language identifiers at getUnorderedBundledEngines
+    func testGetUnorderedBundledSearchEnginesAgainstRandomLanguageCodes() {
+        for languageIdentifier in ["", "-", "_", "foo", "foo/bar", "$foo", "foo_bar", "../../../../etc/passwd", "-foo", "_bar", "I like cheese"] {
+            let engines = SearchEngines.getUnorderedBundledEngines(languageIdentifier: languageIdentifier)
+            print("\(languageIdentifier) = \(engines.count)")
+            XCTAssertEqual(engines.count, 7) // These unknowns should all return the default list for en-US, which is 7 items
+        }
+    }
 }
