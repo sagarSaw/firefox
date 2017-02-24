@@ -10,11 +10,13 @@ import XCGLogger
 
 private let log = Logger.syncLogger
 
+@_semantics("optimize.sil.never")
 private func negate<T>(_ f: @escaping (T) throws -> Bool) -> (T) throws -> Bool {
     return { try !f($0) }
 }
 
 extension Collection {
+    @_semantics("optimize.sil.never")
     func exclude(_ predicate: @escaping (Self.Iterator.Element) throws -> Bool) throws -> [Self.Iterator.Element] {
         return try self.filter(negate(predicate))
     }
@@ -154,6 +156,7 @@ class ThreeWayTreeMerger {
     // Local records that we identified as being the same as remote records.
     var duped: Set<GUID> = Set()
 
+    @_semantics("optimize.sil.never")
     init(local: BookmarkTree, mirror: BookmarkTree, remote: BookmarkTree, itemSources: ItemSources) {
         precondition(mirror.root != nil)
         assert((mirror.root!.children?.count ?? 0) == BookmarkRoots.RootChildren.count)
@@ -186,6 +189,7 @@ class ThreeWayTreeMerger {
         self.nonRemoteKnownGUIDs = self.mirrorAllGUIDs.union(self.localAllGUIDs).union(self.local.deleted)
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func nullOrMatch(_ a: String?, _ b: String?) -> Bool {
         guard let a = a, let b = b else {
             return true
@@ -203,6 +207,7 @@ class ThreeWayTreeMerger {
      * Note that we don't match records that have already been matched, and
      * we don't match any for which a GUID is known in the mirror or remote.
      */
+    @_semantics("optimize.sil.never")
     fileprivate func findNewLocalNodeMatchingContentOfRemoteNote(_ remote: BookmarkTreeNode, inFolder parent: GUID, withLocalChildren children: [BookmarkTreeNode], havingSeen seen: Set<GUID>) -> BookmarkTreeNode? {
         // TODO: don't compute this list once per incoming child! Profile me.
         let candidates = children.filter { child in
@@ -235,6 +240,7 @@ class ThreeWayTreeMerger {
         return children.find { $0.recordGUID == localItem.guid }
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func takeMirrorChildrenInMergedNode(_ result: MergedTreeNode) throws {
         guard let mirrorChildren = result.mirror?.children else {
             preconditionFailure("Expected children.")
@@ -257,6 +263,7 @@ class ThreeWayTreeMerger {
         result.structureState = MergeState.unchanged
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func oneWayMergeChildListsIntoMergedNode(_ result: MergedTreeNode, fromRemote remote: BookmarkTreeNode) throws {
         guard case .folder = remote else {
             preconditionFailure("Expected folder from which to merge children.")
@@ -266,6 +273,7 @@ class ThreeWayTreeMerger {
         try self.mergeChildListsIntoMergedNode(result, fromLocal: nil, remote: remote, mirror: self.mirror.find(remote.recordGUID))
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func oneWayMergeChildListsIntoMergedNode(_ result: MergedTreeNode, fromLocal local: BookmarkTreeNode) throws {
         guard case .folder = local else {
             preconditionFailure("Expected folder from which to merge children.")
@@ -275,6 +283,7 @@ class ThreeWayTreeMerger {
         try self.mergeChildListsIntoMergedNode(result, fromLocal: local, remote: nil, mirror: self.mirror.find(local.recordGUID))
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func mergeChildListsIntoMergedNode(_ result: MergedTreeNode, fromLocal local: BookmarkTreeNode?, remote: BookmarkTreeNode?, mirror: BookmarkTreeNode?) throws {
         precondition(local != nil || remote != nil, "Expected either local or remote folder for merge.")
 
@@ -578,11 +587,13 @@ class ThreeWayTreeMerger {
         log.debug("Child list didn't change for \(result.guid). Keeping structure state \(result.structureState).")
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func resolveThreeWayValueConflict(_ guid: GUID) throws -> MergeState<BookmarkMirrorItem> {
         // TODO
         return try self.resolveTwoWayValueConflict(guid, localGUID: guid)
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func resolveTwoWayValueConflict(_ guid: GUID, localGUID: GUID) throws -> MergeState<BookmarkMirrorItem> {
         // We don't check for all roots, because we might have to
         // copy them to the mirror or buffer, so we need to pick
@@ -629,6 +640,7 @@ class ThreeWayTreeMerger {
     }
 
     // This will never be called with two primary .unknown values.
+    @_semantics("optimize.sil.never")
     fileprivate func threeWayMerge(_ guid: GUID, localNode: BookmarkTreeNode, remoteNode: BookmarkTreeNode, mirrorNode: BookmarkTreeNode?) throws -> MergedTreeNode {
         if mirrorNode == nil {
             log.debug("Two-way merge for \(guid).")
@@ -715,10 +727,12 @@ class ThreeWayTreeMerger {
         throw BookmarksMergeConsistencyError()
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func twoWayMerge(_ guid: GUID, localNode: BookmarkTreeNode, remoteNode: BookmarkTreeNode) throws -> MergedTreeNode {
         return try self.threeWayMerge(guid, localNode: localNode, remoteNode: remoteNode, mirrorNode: nil)
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func unchangedIf(_ out: MergedTreeNode, original: BookmarkMirrorItem?, new: BookmarkMirrorItem?) -> MergedTreeNode {
         guard let original = original, let new = new else {
             return out
@@ -730,6 +744,7 @@ class ThreeWayTreeMerger {
         return out
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func takeLocalIfChanged(_ local: BookmarkTreeNode, mirror: BookmarkTreeNode?=nil) -> MergedTreeNode {
         let guid = local.recordGUID
         let localValues = self.itemSources.local.getLocalItemWithGUID(guid).value.successValue
@@ -742,6 +757,7 @@ class ThreeWayTreeMerger {
         return unchangedIf(merged, original: mirrorValues, new: localValues)
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func takeRemoteIfChanged(_ remote: BookmarkTreeNode, mirror: BookmarkTreeNode?=nil) -> MergedTreeNode {
         let guid = remote.recordGUID
         let remoteValues = self.itemSources.buffer.getBufferItemWithGUID(guid).value.successValue
@@ -754,6 +770,7 @@ class ThreeWayTreeMerger {
     }
 
     fileprivate var folderNameCache: [GUID: String?] = [:]
+    @_semantics("optimize.sil.never")
     func getNameForFolder(_ folder: MergedTreeNode) throws -> String? {
         if let name = self.folderNameCache[folder.guid] {
             return name
@@ -763,6 +780,7 @@ class ThreeWayTreeMerger {
         return name
     }
 
+    @_semantics("optimize.sil.never")
     func fetchNameForFolder(_ folder: MergedTreeNode) throws -> String? {
         switch folder.valueState {
         case let .new(v):
@@ -789,6 +807,7 @@ class ThreeWayTreeMerger {
         throw BookmarksMergeConsistencyError()
     }
 
+    @_semantics("optimize.sil.never")
     func relocateOrphansTo(_ mergedNode: MergedTreeNode, orphans: [MergedTreeNode]?) throws -> [MergedTreeNode] {
         guard let orphans = orphans else {
             return []
@@ -800,6 +819,7 @@ class ThreeWayTreeMerger {
         }
     }
 
+    @_semantics("optimize.sil.never")
     func relocateMergedTreeNode(_ node: MergedTreeNode, parentID: GUID, parentName: String?) throws -> MergedTreeNode {
         func copyWithMirrorItem(_ item: BookmarkMirrorItem?) throws -> MergedTreeNode {
             guard let item = item else {
@@ -837,6 +857,7 @@ class ThreeWayTreeMerger {
     }
 
     // A helper that'll rewrite the resulting node's value to have the right parent.
+    @_semantics("optimize.sil.never")
     func mergeNode(_ guid: GUID, intoFolder parentID: GUID, withParentName parentName: String?, localNode: BookmarkTreeNode?, mirrorNode: BookmarkTreeNode?, remoteNode: BookmarkTreeNode?) throws -> MergedTreeNode {
         let m = try self.mergeNode(guid, localNode: localNode, mirrorNode: mirrorNode, remoteNode: remoteNode)
 
@@ -851,6 +872,7 @@ class ThreeWayTreeMerger {
     // TODO: if a local or remote node is kept but put in a different folder, we actually
     // need to generate a .new node, so we can take the parentid and parentNode that we
     // must preserve.
+    @_semantics("optimize.sil.never")
     func mergeNode(_ guid: GUID, localNode: BookmarkTreeNode?, mirrorNode: BookmarkTreeNode?, remoteNode: BookmarkTreeNode?) throws -> MergedTreeNode {
         if let localGUID = localNode?.recordGUID {
             log.verbose("Merging nodes with GUID \(guid). Local match is \(localGUID).")
@@ -967,11 +989,13 @@ class ThreeWayTreeMerger {
         return try takeMirrorNode(mirrorNode)
     }
 
+    @_semantics("optimize.sil.never")
     func merge() -> Deferred<Maybe<BookmarksMergeResult>> {
         return self.produceMergedTree()
           >>== self.produceMergeResultFromMergedTree
     }
 
+    @_semantics("optimize.sil.never")
     func produceMergedTree() -> Deferred<Maybe<MergedTree>> {
         // Don't ever do this work twice.
         if self.mergeAttempted {
@@ -1019,12 +1043,14 @@ class ThreeWayTreeMerger {
         return self.prefetchItems() >>> self.walkProducingMergedTree
     }
 
+    @_semantics("optimize.sil.never")
     fileprivate func prefetchItems() -> Success {
         return self.itemSources.prefetchWithGUIDs(self.allChangedGUIDs)
     }
 
     // This should only be called once.
     // Callers should ensure validity of inputs.
+    @_semantics("optimize.sil.never")
     fileprivate func walkProducingMergedTree() -> Deferred<Maybe<MergedTree>> {
         let root = self.merged.root
         assert((root.mirror?.children?.count ?? 0) == BookmarkRoots.RootChildren.count)
@@ -1118,6 +1144,7 @@ class ThreeWayTreeMerger {
      * switch statements are easier to read through and match up to expected behavior, but
      * also because it's simpler than threading all of the edge cases around.
      */
+    @_semantics("optimize.sil.never")
     func produceMergeResultFromMergedTree(_ mergedTree: MergedTree) -> Deferred<Maybe<BookmarksMergeResult>> {
         let upstreamOp = UpstreamCompletionOp()
         let bufferOp = BufferCompletionOp()
