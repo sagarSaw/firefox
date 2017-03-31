@@ -652,8 +652,7 @@ extension AppDelegate {
 
 extension AppDelegate {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let apnsToken = deviceToken.hexEncodedString
-        FxALoginHelper.sharedInstance.apnsRegisterDidSucceed(apnsToken: apnsToken)
+        FxALoginHelper.sharedInstance.apnsRegisterDidSucceed(deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {

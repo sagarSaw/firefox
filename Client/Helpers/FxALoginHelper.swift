@@ -90,6 +90,15 @@ class FxALoginHelper {
         requestUserNotifications(application)
     }
 
+    func pushConfiguration() -> PushConfiguration? {
+        switch AppConstants.BuildChannel {
+        case .developer:
+            return DeveloperPushConfiguration()
+        default:
+            return nil
+        }
+    }
+
     // This is called when the user logs into a new FxA account.
     // It manages the asking for user permission for notification and registration 
     // for APNS and WebPush notifications.
@@ -162,8 +171,10 @@ class FxALoginHelper {
         }
     }
 
-    func apnsRegisterDidSucceed(apnsToken: String) {
-        guard let configuration = self.profile?.accountConfiguration.pushConfiguration else {
+    func apnsRegisterDidSucceed(_ deviceToken: Data) {
+        let apnsToken = deviceToken.hexEncodedString
+
+        guard let configuration = pushConfiguration() ?? self.profile?.accountConfiguration.pushConfiguration else {
             log.error("Push server endpoint could not be found")
             return pushRegistrationDidFail()
         }
