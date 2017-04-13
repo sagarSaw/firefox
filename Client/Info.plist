@@ -150,5 +150,19 @@
 	</array>
     <key>UIFileSharingEnabled</key>
     <true/>
+    <key>Fabric</key>
+    <dict>
+        <key>APIKey</key>
+        <string>86a037f14f778d7306ba163f97d258b24727c3c7</string>
+        <key>Kits</key>
+        <array>
+            <dict>
+                <key>KitInfo</key>
+                <dict/>
+                <key>KitName</key>
+                <string>Crashlytics</string>
+            </dict>
+        </array>
+    </dict>
 </dict>
 </plist>

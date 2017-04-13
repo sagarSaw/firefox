@@ -10,6 +10,8 @@ import MessageUI
 import WebImage
 import SwiftKeychainWrapper
 import LocalAuthentication
+import Fabric
+import Crashlytics
 
 private let log = Logger.browserLogger
 
@@ -131,12 +133,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
 
         self.window!.rootViewController = rootViewController
 
-        do {
-            log.debug("Configuring Crash Reporting...")
-            try PLCrashReporter.shared().enableAndReturnError()
-        } catch let error as NSError {
-            log.error("Failed to enable PLCrashReporter - \(error.description)")
-        }
+//        do {
+//            log.debug("Configuring Crash Reporting...")
+//            try PLCrashReporter.shared().enableAndReturnError()
+//        } catch let error as NSError {
+//            log.error("Failed to enable PLCrashReporter - \(error.description)")
+//        }
 
         log.debug("Adding observers…")
         NotificationCenter.default.addObserver(forName: NSNotification.Name.FSReadingListAddReadingListItem, object: nil, queue: nil) { (notification) -> Void in
@@ -214,6 +216,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        Fabric.with([Crashlytics.self])
+
         // Override point for customization after application launch.
         var shouldPerformAdditionalDelegateHandling = true
 
