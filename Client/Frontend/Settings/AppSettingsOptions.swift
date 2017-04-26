@@ -604,7 +604,6 @@ class LoginsSetting: Setting {
     override func onClick(_: UINavigationController?) {
         guard let authInfo = KeychainWrapper.sharedAppContainerKeychain.authenticationInfo() else {
             settings?.navigateToLoginsList()
-            LeanplumIntegration.sharedInstance.track(eventName: .openedLogins)
             return
         }
 
@@ -613,7 +612,6 @@ class LoginsSetting: Setting {
             touchIDReason: AuthenticationStrings.loginsTouchReason,
             success: {
                 self.settings?.navigateToLoginsList()
-                LeanplumIntegration.sharedInstance.track(eventName: .openedLogins)
             },
             cancel: {
                 self.deselectRow()
@@ -624,7 +622,6 @@ class LoginsSetting: Setting {
             })
         } else {
             settings?.navigateToLoginsList()
-            LeanplumIntegration.sharedInstance.track(eventName: .openedLogins)
         }
     }
 }
