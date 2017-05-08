@@ -407,6 +407,24 @@ class ExportBrowserDataSetting: HiddenSetting {
     }
 }
 
+class EnableActivtyStreamSetting: HiddenSetting {
+    let profile: Profile
+
+    override init(settings: SettingsTableViewController) {
+        self.profile = settings.profile
+        super.init(settings: settings)
+    }
+
+    override var title: NSAttributedString? {
+        // Not localized for now.
+        return NSAttributedString(string: "Enable the New Tab Experience", attributes: [NSForegroundColorAttributeName: UIConstants.TableViewRowTextColor])
+    }
+
+    override func onClick(_ navigationController: UINavigationController?) {
+        FeatureSwitches.activityStream.enrollMember(profile.prefs)
+    }
+}
+
 class EnableBookmarkMergingSetting: HiddenSetting {
     override var title: NSAttributedString? {
         // Not localized for now.

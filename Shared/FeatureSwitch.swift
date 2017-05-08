@@ -7,7 +7,7 @@ import Foundation
 /// Steadily growing set of feature switches controlling access to features by populations of Release users.
 open class FeatureSwitches {
     open static let activityStream =
-        FeatureSwitch(named: "activity_stream", AppConstants.MOZ_AS_PANEL, allowPercentage: 10)
+        FeatureSwitch(named: "activity_stream", AppConstants.MOZ_AS_PANEL, allowPercentage: 50)
 }
 
 /// Small class to allow a percentage of users to access a given feature.
@@ -36,6 +36,12 @@ open class FeatureSwitch {
             return nonChannelValue
         }
 
+        // Check if this feature has been enabled by the user
+        let key = "feature_switches/\(self.featureID)_enabled"
+        if let isEnabled = prefs.boolForKey(key) {
+            return isEnabled
+        }
+
         // Use a branch of the prefs.
         let uuidKey = "feature_switches/\(self.featureID)_uuid"
 
@@ -49,5 +55,15 @@ open class FeatureSwitch {
 
         let hash = abs(uuidString.hashValue)
         return hash % 100 < self.percentage
+    }
+
+    open func enrollMember(_ prefs: Prefs) {
+        let key = "feature_switches/\(self.featureID)_enabled"
+        prefs.setBool(true, forKey: key)
+    }
+
+    open func removeMember(_ prefs: Prefs) {
+        let key = "feature_switches/\(self.featureID)_enabled"
+        prefs.setBool(false, forKey: key)
     }
 }
