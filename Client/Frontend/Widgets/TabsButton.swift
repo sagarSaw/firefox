@@ -84,6 +84,9 @@ class TabsButton: UIControl {
         let view = UIView()
         view.clipsToBounds = false
         view.isUserInteractionEnabled = false
+        view.layer.borderColor = UIColor.black.cgColor
+        view.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
+        view.layer.borderWidth = 2
         return view
     }()
 

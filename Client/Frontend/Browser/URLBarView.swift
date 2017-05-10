@@ -55,7 +55,8 @@ struct URLBarViewUX {
     }()
 
     static func backgroundColorWithAlpha(_ alpha: CGFloat) -> UIColor {
-        return UIConstants.AppBackgroundColor.withAlphaComponent(alpha)
+        return UIColor(rgb: 0xF7FAFC).withAlphaComponent(alpha)
+        //return UIConstants.AppBackgroundColor.withAlphaComponent(alpha)
     }
 }
 
@@ -128,19 +129,21 @@ class URLBarView: UIView {
         locationView.translatesAutoresizingMaskIntoConstraints = false
         locationView.readerModeState = ReaderModeState.unavailable
         locationView.delegate = self
+      //  locationView.backgroundColor = self.backgroundColor
         return locationView
     }()
 
     lazy var locationContainer: UIView = {
         let locationContainer = UIView()
         locationContainer.translatesAutoresizingMaskIntoConstraints = false
+        locationContainer.backgroundColor = self.backgroundColor
 
         // Enable clipping to apply the rounded edges to subviews.
         locationContainer.clipsToBounds = true
 
-        locationContainer.layer.borderColor = self.locationBorderColor.cgColor
-        locationContainer.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
-        locationContainer.layer.borderWidth = URLBarViewUX.TextFieldBorderWidth
+      //  locationContainer.layer.borderColor = self.locationBorderColor.cgColor
+       // locationContainer.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
+       // locationContainer.layer.borderWidth = URLBarViewUX.TextFieldBorderWidth
 
         return locationContainer
     }()
@@ -149,6 +152,7 @@ class URLBarView: UIView {
         let tabsButton = TabsButton.tabTrayButton()
         tabsButton.addTarget(self, action: #selector(URLBarView.SELdidClickAddTab), for: UIControlEvents.touchUpInside)
         tabsButton.accessibilityIdentifier = "URLBarView.tabsButton"
+
         return tabsButton
     }()
 
@@ -226,8 +230,8 @@ class URLBarView: UIView {
     }
 
     fileprivate func commonInit() {
-        backgroundColor = URLBarViewUX.backgroundColorWithAlpha(0)
-        addSubview(curveShape)
+        backgroundColor = UIColor(rgb: 0xF7FAFC)
+       // addSubview(curveShape)
         addSubview(scrollToTopButton)
 
         addSubview(progressBar)
@@ -246,7 +250,8 @@ class URLBarView: UIView {
 
         helper = TabToolbarHelper(toolbar: self)
         setupConstraints()
-
+       // locationContainer.backgroundColor = self.backgroundColor
+       // locationView.backgroundColor = self.backgroundColor
         // Make sure we hide any views that shouldn't be showing in non-overlay mode.
         updateViewsForOverlayModeAndToolbarChanges()
     }
@@ -277,11 +282,6 @@ class URLBarView: UIView {
             make.size.equalTo(UIConstants.ToolbarHeight)
         }
 
-        curveShape.snp.makeConstraints { make in
-            make.top.left.bottom.equalTo(self)
-            self.rightBarConstraint = make.right.equalTo(self).constraint
-            self.rightBarConstraint?.update(offset: defaultRightOffset)
-        }
 
         backButton.snp.makeConstraints { make in
             make.left.centerY.equalTo(self)
@@ -377,6 +377,7 @@ class URLBarView: UIView {
         locationTextField.font = UIConstants.DefaultChromeFont
         locationTextField.accessibilityIdentifier = "address"
         locationTextField.accessibilityLabel = NSLocalizedString("Address and Search", comment: "Accessibility label for address and search field, both words (Address, Search) are therefore nouns.")
+        locationTextField.backgroundColor = UIColor(rgb: 0xF7FAFC)
         locationTextField.attributedPlaceholder = self.locationView.placeholder
 
         locationContainer.addSubview(locationTextField)
@@ -410,7 +411,9 @@ class URLBarView: UIView {
     func updateAlphaForSubviews(_ alpha: CGFloat) {
         self.tabsButton.alpha = alpha
         self.locationContainer.alpha = alpha
-        self.backgroundColor = URLBarViewUX.backgroundColorWithAlpha(1 - alpha)
+      //  self.backgroundColor = URLBarViewUX.backgroundColorWithAlpha(1 - alpha)
+        self.locationContainer.backgroundColor = self.backgroundColor
+        self.locationView.backgroundColor = self.backgroundColor
         self.actionButtons.forEach { $0.alpha = alpha }
     }
 
@@ -753,13 +756,13 @@ private let H_M4 = 0.961
 
 /* Code for drawing the urlbar curve */
 private class CurveView: UIView {
-    fileprivate lazy var leftCurvePath: UIBezierPath = {
-        var leftArc = UIBezierPath(arcCenter: CGPoint(x: 5, y: 5), radius: CGFloat(5), startAngle: CGFloat(-Double.pi), endAngle: CGFloat(-(Double.pi / 2)), clockwise: true)
-        leftArc.addLine(to: CGPoint(x: 0, y: 0))
-        leftArc.addLine(to: CGPoint(x: 0, y: 5))
-        leftArc.close()
-        return leftArc
-    }()
+//    fileprivate lazy var leftCurvePath: UIBezierPath = {
+//        var leftArc = UIBezierPath(arcCenter: CGPoint(x: 5, y: 5), radius: CGFloat(5), startAngle: CGFloat(-Double.pi), endAngle: CGFloat(-(Double.pi / 2)), clockwise: true)
+//        leftArc.addLine(to: CGPoint(x: 0, y: 0))
+//        leftArc.addLine(to: CGPoint(x: 0, y: 5))
+//        leftArc.close()
+//        return leftArc
+//    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -781,7 +784,7 @@ private class CurveView: UIView {
     }
 
     fileprivate func drawFromTop(_ path: UIBezierPath) {
-        let height: Double = Double(UIConstants.ToolbarHeight)
+        let height: Double = Double(UIConstants.URLBarHeight)
         let width = getWidthForHeight(height)
         let from = (Double(self.frame.width) - width * 2 - Double(URLBarViewUX.URLBarCurveOffset - URLBarViewUX.URLBarCurveBounceBuffer), Double(0))
 
@@ -798,7 +801,7 @@ private class CurveView: UIView {
     fileprivate func getPath() -> UIBezierPath {
         let path = UIBezierPath()
         self.drawFromTop(path)
-        path.addLine(to: CGPoint(x: self.frame.width, y: UIConstants.ToolbarHeight))
+        path.addLine(to: CGPoint(x: self.frame.width, y: UIConstants.URLBarHeight))
         path.addLine(to: CGPoint(x: self.frame.width, y: 0))
         path.addLine(to: CGPoint(x: 0, y: 0))
         path.close()
@@ -806,14 +809,14 @@ private class CurveView: UIView {
     }
 
     override func draw(_ rect: CGRect) {
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        context.saveGState()
-        context.clear(rect)
-        context.setFillColor(URLBarViewUX.backgroundColorWithAlpha(1).cgColor)
-        getPath().fill()
-        leftCurvePath.fill()
-        context.drawPath(using: CGPathDrawingMode.fill)
-        context.restoreGState()
+//        guard let context = UIGraphicsGetCurrentContext() else { return }
+//        context.saveGState()
+//        context.clear(rect)
+//        context.setFillColor(URLBarViewUX.backgroundColorWithAlpha(1).cgColor)
+//        getPath().fill()
+//       // leftCurvePath.fill()
+//        context.drawPath(using: CGPathDrawingMode.fill)
+//        context.restoreGState()
     }
 }
 
@@ -908,7 +911,8 @@ extension ToolbarTextField: Themeable {
             return
         }
 
-        backgroundColor = theme.backgroundColor
+       // backgroundColor = theme.backgroundColor
+
         textColor = theme.textColor
         clearButtonTintColor = theme.buttonTintColor
         highlightColor = theme.highlightColor!

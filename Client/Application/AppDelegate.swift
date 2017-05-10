@@ -128,11 +128,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         navigationController.isNavigationBarHidden = true
 
         if AppConstants.MOZ_STATUS_BAR_NOTIFICATION {
-            rootViewController = NotificationRootViewController(rootViewController: navigationController)
+         //   rootViewController = NotificationRootViewController(rootViewController: navigationController)
         } else {
             rootViewController = navigationController
         }
-
+        rootViewController = navigationController
         self.window!.rootViewController = rootViewController
 
         log.debug("Adding observers…")
@@ -232,6 +232,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         
         log.debug("Making window key and visible…")
         self.window!.makeKeyAndVisible()
+      //  UIApplication.shared.statusBarStyle = .lightContent
 
         // Now roll logs.
         log.debug("Triggering log roll.")
@@ -249,6 +250,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         }
 
         log.debug("Done with applicationDidFinishLaunching.")
+
+//        guard let statusBar = UIApplication.shared.value(forKeyPath: "statusBarWindow.statusBar") as? UIView else {
+//            return  shouldPerformAdditionalDelegateHandling
+//        }
+//        statusBar.backgroundColor = UIColor(rgb: 0xF7FAFC)
 
         return shouldPerformAdditionalDelegateHandling
     }

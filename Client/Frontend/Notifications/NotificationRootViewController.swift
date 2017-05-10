@@ -317,6 +317,7 @@ class NotificationStatusView: UIView {
         isUserInteractionEnabled = true
         addGestureRecognizer(tapGesture)
         backgroundColor = UIConstants.AppBackgroundColor
+        backgroundColor = UIColor.clear
         addSubview(titleLabel)
         addSubview(ellipsisLabel)
         titleLabel.snp.makeConstraints { make in

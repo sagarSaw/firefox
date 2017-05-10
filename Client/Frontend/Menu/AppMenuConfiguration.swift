@@ -192,10 +192,7 @@ struct AppMenuConfiguration: MenuConfiguration {
         let menuToolbarItems: [MenuToolbarItem]?
         switch appState.ui {
         case .tab, .tabTray:
-            menuToolbarItems = [AppMenuConfiguration.TopSitesMenuToolbarItem,
-                                AppMenuConfiguration.BookmarksMenuToolbarItem,
-                                AppMenuConfiguration.HistoryMenuToolbarItem,
-                                AppMenuConfiguration.ReadingListMenuToolbarItem]
+            menuToolbarItems = nil
         default:
             menuToolbarItems = nil
         }

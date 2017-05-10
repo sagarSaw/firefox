@@ -166,7 +166,7 @@ class BrowserViewController: UIViewController {
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return UIStatusBarStyle.lightContent
+        return UIStatusBarStyle.default
     }
 
     func shouldShowFooterForTraitCollection(_ previousTraitCollection: UITraitCollection) -> Bool {
@@ -216,6 +216,7 @@ class BrowserViewController: UIViewController {
             toolbar?.tabToolbarDelegate = self
             footerBackground = BlurWrapper(view: toolbar!)
             footerBackground?.translatesAutoresizingMaskIntoConstraints = false
+            footerBackground?.backgroundColor = UIColor(rgb: 0xF7FAFC)
 
             // Need to reset the proper blur style
             if let selectedTab = tabManager.selectedTab, selectedTab.isPrivate {
@@ -223,6 +224,7 @@ class BrowserViewController: UIViewController {
                 toolbar?.applyTheme(Theme.PrivateMode)
             }
             footer.addSubview(footerBackground!)
+            footer.backgroundColor = UIColor(rgb: 0xF7FAFC)
         }
         
         if showTopTabs {
@@ -352,6 +354,7 @@ class BrowserViewController: UIViewController {
         log.debug("BVC adding footer and header…")
         footerBackdrop = UIView()
         footerBackdrop.backgroundColor = UIColor.white
+        footerBackdrop.backgroundColor = UIColor(rgb: 0xF7FAFC)
         view.addSubview(footerBackdrop)
         headerBackdrop = UIView()
         headerBackdrop.backgroundColor = UIColor.white
@@ -370,7 +373,8 @@ class BrowserViewController: UIViewController {
         log.debug("BVC setting up status bar…")
         // Temporary work around for covering the non-clipped web view content
         statusBarOverlay = UIView()
-        statusBarOverlay.backgroundColor = BrowserViewControllerUX.BackgroundColor
+        statusBarOverlay.backgroundColor = UIColor(rgb: 0xF7FAFC)
+        //statusBarOverlay.backgroundColor = UIColor(rgb: 0xF7FAFC)
         view.addSubview(statusBarOverlay)
 
         log.debug("BVC setting up top touch area…")
@@ -418,6 +422,8 @@ class BrowserViewController: UIViewController {
         searchLoader = SearchLoader(profile: profile, urlBar: urlBar)
 
         footer = UIView()
+        footer.backgroundColor = UIColor(rgb: 0xF7FAFC)
+
         self.view.addSubview(footer)
         self.view.addSubview(snackBars)
         snackBars.backgroundColor = UIColor.clear
@@ -448,8 +454,8 @@ class BrowserViewController: UIViewController {
         
         urlBar.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalTo(urlBarTopTabsContainer)
-            make.height.equalTo(UIConstants.ToolbarHeight)
-            make.top.equalTo(topTabsContainer.snp.bottom)
+            make.height.equalTo(UIConstants.URLBarHeight)
+            make.top.equalTo(0)
         }
 
         header.snp.makeConstraints { make in
@@ -692,7 +698,7 @@ class BrowserViewController: UIViewController {
         // Setup the bottom toolbar
         toolbar?.snp.remakeConstraints { make in
             make.edges.equalTo(self.footerBackground!)
-            make.height.equalTo(UIConstants.ToolbarHeight)
+            make.height.equalTo(UIConstants.URLBarHeight)
         }
 
         footer.snp.remakeConstraints { make in

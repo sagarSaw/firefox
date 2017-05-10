@@ -89,11 +89,15 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
     }
 
     override func viewDidLoad() {
-        view.backgroundColor = UIConstants.PanelBackgroundColor
+
+
         let blur = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.light))
         view.addSubview(blur)
 
         super.viewDidLoad()
+
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        self.tableView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
 
         KeyboardHelper.defaultHelper.addDelegate(self)
 
@@ -126,9 +130,9 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
             make.bottom.equalTo(self.searchEngineScrollView)
         }
 
-        blur.snp.makeConstraints { make in
-            make.edges.equalTo(self.view)
-        }
+//        blur.snp.makeConstraints { make in
+//            make.edges.equalTo(self.view)
+//        }
 
         suggestionCell.delegate = self
 
@@ -217,10 +221,10 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         }
 
         let prompt = UIView()
-        prompt.backgroundColor = SearchViewControllerUX.PromptColor
+        prompt.backgroundColor = UIColor(rgb: 0x1897da)
 
         let promptBottomBorder = UIView()
-        promptBottomBorder.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+        promptBottomBorder.backgroundColor = UIColor(rgb: 0x1897da)
         prompt.addSubview(promptBottomBorder)
 
         // Insert behind the tableView so the tableView slides on top of it
@@ -238,11 +242,12 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         promptLabel.font = SearchViewControllerUX.PromptFont
         promptLabel.numberOfLines = 0
         promptLabel.lineBreakMode = NSLineBreakMode.byWordWrapping
+        promptLabel.textColor = .white
         prompt.addSubview(promptLabel)
 
         let promptYesButton = InsetButton()
         promptYesButton.setTitle(PromptYes, for: UIControlState())
-        promptYesButton.setTitleColor(SearchViewControllerUX.PromptButtonColor, for: UIControlState.normal)
+        promptYesButton.setTitleColor(.white, for: UIControlState.normal)
         promptYesButton.titleLabel?.font = SearchViewControllerUX.PromptYesFont
         promptYesButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
         // If the prompt message doesn't fit, this prevents it from pushing the buttons
@@ -253,7 +258,7 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
 
         let promptNoButton = InsetButton()
         promptNoButton.setTitle(PromptNo, for: UIControlState())
-        promptNoButton.setTitleColor(SearchViewControllerUX.PromptButtonColor, for: UIControlState.normal)
+        promptNoButton.setTitleColor(.white, for: UIControlState.normal)
         promptNoButton.titleLabel?.font = SearchViewControllerUX.PromptNoFont
         promptNoButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
         // If the prompt message doesn't fit, this prevents it from pushing the buttons
@@ -520,9 +525,11 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
         switch SearchListSection(rawValue: indexPath.section)! {
         case .searchSuggestions:
             suggestionCell.imageView?.image = searchEngines.defaultEngine.image
+            suggestionCell.backgroundColor = UIConstants.PanelBackgroundColor
             suggestionCell.imageView?.isAccessibilityElement = true
             suggestionCell.imageView?.accessibilityLabel = String(format: NSLocalizedString("Search suggestions from %@", tableName: "Search", comment: "Accessibility label for image of default search engine displayed left to the actual search suggestions from the engine. The parameter substituted for \"%@\" is the name of the search engine. E.g.: Search suggestions from Google"), searchEngines.defaultEngine.shortName)
             return suggestionCell
@@ -542,6 +549,7 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
                     })
                 }
             }
+            cell.backgroundColor = UIConstants.PanelBackgroundColor
             return cell
         }
     }
