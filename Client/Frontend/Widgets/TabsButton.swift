@@ -14,7 +14,7 @@ struct TabsButtonUX {
     static let TitleBackgroundColor: UIColor = UIColor.white
     static let CornerRadius: CGFloat = 2
     static let TitleFont: UIFont = UIConstants.DefaultChromeSmallFontBold
-    static let BorderStrokeWidth: CGFloat = 1
+    static let BorderStrokeWidth: CGFloat = 2
     static let BorderColor: UIColor = UIColor.clear
     static let TitleInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
 
@@ -90,6 +90,9 @@ class TabsButton: UIControl {
         return view
     }()
 
+    let line = UIView()
+
+
     fileprivate lazy var labelBackground: UIView = {
         let background = UIView()
         background.layer.cornerRadius = TabsButtonUX.CornerRadius
@@ -115,7 +118,11 @@ class TabsButton: UIControl {
         insideButton.addSubview(labelBackground)
         insideButton.addSubview(borderView)
         insideButton.addSubview(titleLabel)
+        line.backgroundColor = UIColor(cgColor: insideButton.layer.borderColor!)
+        line.layer.cornerRadius = insideButton.layer.cornerRadius
+        addSubview(line)
         addSubview(insideButton)
+
         isAccessibilityElement = true
         accessibilityTraits |= UIAccessibilityTraitButton
     }
@@ -133,6 +140,13 @@ class TabsButton: UIControl {
         }
         insideButton.snp.remakeConstraints { (make) -> Void in
             make.edges.equalTo(self).inset(insets)
+        }
+
+        line.snp.makeConstraints { make in
+            make.height.equalTo(1)
+            make.trailing.equalTo(insideButton).offset(-1)
+            make.leading.equalTo(insideButton).offset(1)
+            make.top.equalTo(insideButton.snp.bottom).offset(1)
         }
     }
 

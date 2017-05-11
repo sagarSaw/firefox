@@ -56,7 +56,6 @@ struct URLBarViewUX {
 
     static func backgroundColorWithAlpha(_ alpha: CGFloat) -> UIColor {
         return UIColor(rgb: 0xF7FAFC).withAlphaComponent(alpha)
-        //return UIConstants.AppBackgroundColor.withAlphaComponent(alpha)
     }
 }
 
