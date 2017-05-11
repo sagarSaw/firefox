@@ -117,7 +117,7 @@ class MenuViewController: UIViewController {
             // add a shadow to the bottom of the toolbar
             menuView.toolbar.layer.shadowOffset = CGSize(width: 0, height: 2)
 
-            menuView.openMenuImage.image = menuConfig.menuIcon()?.withRenderingMode(.alwaysTemplate)
+//            menuView.openMenuImage.image = menuConfig.menuIcon()?.withRenderingMode(.alwaysTemplate)
             menuView.openMenuImage.tintColor = menuConfig.toolbarTintColor()
             menuView.openMenuImage.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.tapToDismissMenu(_:))))
             setupDefaultModalMenuConstraints()
@@ -126,8 +126,8 @@ class MenuViewController: UIViewController {
 
     fileprivate func setupDefaultModalMenuConstraints() {
         menuView.snp.remakeConstraints { make in
-            make.left.equalTo(view.snp.left).offset(24).priority(25)
-            make.right.equalTo(view.snp.right).offset(-24).priority(25)
+            make.left.equalTo(view.snp.left).offset(0).priority(25)
+            make.right.equalTo(view.snp.right).offset(0).priority(25)
             make.bottom.equalTo(view.snp.bottom)
         }
     }

@@ -47,7 +47,7 @@ struct AppMenuConfiguration: MenuConfiguration {
 
     func toolbarColor() -> UIColor {
 
-        return isPrivateMode ? UIConstants.MenuToolbarBackgroundColorPrivate : UIConstants.MenuToolbarBackgroundColorNormal
+        return isPrivateMode ? UIConstants.MenuToolbarBackgroundColorPrivate : UIColor(rgb: 0xF7FAFC)
     }
 
     func toolbarTintColor() -> UIColor {
@@ -55,7 +55,7 @@ struct AppMenuConfiguration: MenuConfiguration {
     }
 
     func menuBackgroundColor() -> UIColor {
-        return isPrivateMode ? UIConstants.MenuBackgroundColorPrivate : UIConstants.MenuBackgroundColorNormal
+        return isPrivateMode ? UIConstants.MenuBackgroundColorPrivate : UIColor(rgb: 0xF7FAFC)
     }
 
     func menuTintColor() -> UIColor {

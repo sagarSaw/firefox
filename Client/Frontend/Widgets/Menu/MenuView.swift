@@ -13,14 +13,17 @@ class MenuView: UIView {
         return toolbar
     }()
 
-    lazy var openMenuImage: UIImageView = {
+    lazy var openMenuImage: UIView = {
         let openMenuImage = UIImageView()
-        openMenuImage.contentMode = UIViewContentMode.scaleAspectFit
-        openMenuImage.isUserInteractionEnabled = true
-        openMenuImage.isAccessibilityElement = true
-        openMenuImage.accessibilityTraits = UIAccessibilityTraitButton
-        openMenuImage.accessibilityLabel =  NSLocalizedString("Menu.CloseMenu.AccessibilityLabel", tableName: "Menu", value: "Close Menu", comment: "Accessibility label describing the button that closes the menu when open")
-        return openMenuImage
+        let chev = ChevronView(direction: .down)
+
+        return chev
+//        openMenuImage.contentMode = UIViewContentMode.scaleAspectFit
+//        openMenuImage.isUserInteractionEnabled = true
+//        openMenuImage.isAccessibilityElement = true
+//        openMenuImage.accessibilityTraits = UIAccessibilityTraitButton
+//        openMenuImage.accessibilityLabel =  NSLocalizedString("Menu.CloseMenu.AccessibilityLabel", tableName: "Menu", value: "Close Menu", comment: "Accessibility label describing the button that closes the menu when open")
+//        return openMenuImage
     }()
 
     lazy var menuFooterView: UIView = UIView()
@@ -63,6 +66,12 @@ class MenuView: UIView {
 
     var cornersToRound: UIRectCorner?
     var cornerRadius: CGSize?
+
+    lazy var menuLine: UIView = {
+        let layer = UIView()
+        layer.backgroundColor = UIColor.black.withAlphaComponent(0.05)
+        return layer
+    }()
 
     var menuColor: UIColor = UIColor.clear {
         didSet {
@@ -138,8 +147,9 @@ class MenuView: UIView {
         menuPagingView.addGestureRecognizer(longPress)
 
         menuContainerView.addSubview(menuPagingView)
-        menuContainerView.addSubview(pageControl)
+     //   menuContainerView.addSubview(pageControl)
         self.addSubview(toolbar)
+        self.addSubview(menuLine)
 
         switch presentationStyle {
         case .modal:
@@ -156,13 +166,18 @@ class MenuView: UIView {
 
             menuPagingView.snp.makeConstraints { make in
                 make.top.left.right.equalTo(menuContainerView)
-                make.bottom.equalTo(pageControl.snp.top)
+                make.bottom.equalTo(menuContainerView)
                 make.height.equalTo(0)
             }
 
-            pageControl.snp.makeConstraints { make in
-                make.bottom.equalTo(menuContainerView)
-                make.centerX.equalTo(self)
+//            pageControl.snp.makeConstraints { make in
+//                make.bottom.equalTo(menuContainerView)
+//                make.centerX.equalTo(self)
+//            }
+            menuLine.snp.makeConstraints { make in
+                make.height.equalTo(2)
+                make.leading.trailing.equalTo(menuContainerView)
+                make.bottom.equalTo(menuFooterView.snp.top)
             }
 
         case .popover:
@@ -173,18 +188,20 @@ class MenuView: UIView {
 
             menuPagingView.snp.makeConstraints { make in
                 make.top.left.right.equalTo(menuContainerView)
-                make.bottom.equalTo(pageControl.snp.top).offset(-itemPadding)
+                make.bottom.equalTo(menuContainerView).offset(-itemPadding)
                 make.height.equalTo(0)
             }
-            pageControl.snp.makeConstraints { make in
-                make.bottom.equalTo(menuContainerView)
-                make.centerX.equalTo(self)
-            }
+//            pageControl.snp.makeConstraints { make in
+//                make.bottom.equalTo(menuContainerView)
+//                make.centerX.equalTo(self)
+//            }
             toolbar.snp.makeConstraints { make in
                 make.height.equalTo(toolbarHeight)
                 make.bottom.left.right.equalTo(self)
             }
         }
+
+
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -202,8 +219,10 @@ class MenuView: UIView {
         }
 
         menuFooterView.addSubview(openMenuImage)
+
         openMenuImage.snp.makeConstraints { make in
             make.center.equalTo(menuFooterView)
+            make.size.equalTo(20)
         }
     }
 
@@ -311,7 +330,7 @@ class MenuView: UIView {
         layoutToolbar()
         layoutMenu()
         layoutFooter()
-        roundCorners()
+      //  roundCorners()
     }
 
     func roundCorners() {

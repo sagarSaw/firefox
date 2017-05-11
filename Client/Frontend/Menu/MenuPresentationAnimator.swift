@@ -96,7 +96,7 @@ extension MenuPresentationAnimator {
             vanishingPoint = CGPoint(x: menuView.center.x, y: menuView.frame.size.height)
         }
 
-        let minimisedFrame = CGRect(origin: vanishingPoint, size: CGSize.zero)
+        let minimisedFrame = menuView.frame
         guard let menuViewSnapshot = menuView.snapshotView(afterScreenUpdates: presenting) else {
             transitionContext.completeTransition(true)
             return
@@ -113,17 +113,15 @@ extension MenuPresentationAnimator {
             menuView.isHidden = true
         }
 
-        let offstageValue = bottomView.bounds.size.width / 2
-        let offstageLeft = CGAffineTransform(translationX: -offstageValue, y: 0)
-        let offstageRight = CGAffineTransform(translationX: offstageValue, y: 0)
+//        let offstageValue = bottomView.bounds.size.width / 2
+//        let offstageLeft = CGAffineTransform(translationX: -offstageValue, y: 0)
+//        let offstageRight = CGAffineTransform(translationX: offstageValue, y: 0)
 
         if presenting {
             menuView.alpha = 0
             menuController.menuView.isHidden = true
         } else {
-            // move the buttons to their offstage positions
-            viewsToAnimateLeft?.forEach { $0.transform = offstageLeft }
-            viewsToAnimateRight?.forEach { $0.transform = offstageRight }
+
         }
 
         UIView.animate(withDuration: transitionDuration(using: transitionContext), delay: 0.0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: [], animations: {
@@ -133,15 +131,7 @@ extension MenuPresentationAnimator {
                 menuViewSnapshot.frame = menuView.frame
                 menuView.backgroundColor = menuView.backgroundColor?.withAlphaComponent(0.4)
                 menuView.alpha = 1
-                // animate back and forward buttons off to the left
-                viewsToAnimateLeft?.forEach { $0.transform = offstageLeft }
-                // animate reload and share buttons off to the right
-                viewsToAnimateRight?.forEach { $0.transform = offstageRight }
             } else {
-                // animate back and forward buttons in from the left
-                viewsToAnimateLeft?.forEach { $0.transform = CGAffineTransform.identity }
-                // animate reload and share buttons in from the right
-                viewsToAnimateRight?.forEach { $0.transform = CGAffineTransform.identity }
                 menuViewSnapshot.frame = minimisedFrame
                 menuViewSnapshot.alpha = 0
                 menuView.alpha = 0

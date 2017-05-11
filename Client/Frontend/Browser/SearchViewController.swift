@@ -106,6 +106,7 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         searchEngineScrollView.layer.shadowOpacity = 100
         searchEngineScrollView.layer.shadowOffset = CGSize(width: 0, height: -SearchViewControllerUX.SearchEngineTopBorderWidth)
         searchEngineScrollView.layer.shadowColor = SearchViewControllerUX.SearchEngineScrollViewBorderColor
+        searchEngineScrollView.backgroundColor = 
         searchEngineScrollView.clipsToBounds = false
 
         searchEngineScrollView.decelerationRate = UIScrollViewDecelerationRateFast
