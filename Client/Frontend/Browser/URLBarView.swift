@@ -14,7 +14,8 @@ struct URLBarViewUX {
     static let TextFieldBorderColor = UIColor(rgb: 0xBBBBBB)
     static let TextFieldActiveBorderColor = UIColor(rgb: 0x4A90E2)
     static let TextFieldContentInset = UIOffsetMake(9, 5)
-    static let LocationLeftPadding = 5
+    static let LocationLeftPadding = 6
+
     static let LocationHeight = 28
     static let LocationContentOffset: CGFloat = 8
     static let TextFieldCornerRadius: CGFloat = 3
@@ -47,8 +48,8 @@ struct URLBarViewUX {
         theme.borderColor = TextFieldBorderColor
         theme.activeBorderColor = TextFieldActiveBorderColor
         theme.tintColor = ProgressTintColor
-        theme.textColor = UIColor.black
-        theme.buttonTintColor = UIColor.darkGray
+        theme.textColor = UIColor(rgb: 0x272727)
+        theme.buttonTintColor = UIColor(rgb: 0x272727)
         themes[Theme.NormalMode] = theme
 
         return themes
@@ -109,11 +110,7 @@ class URLBarView: UIView {
     fileprivate var currentTheme: String = Theme.NormalMode
 
     var toolbarIsShowing = false
-    var topTabsIsShowing = false {
-        didSet {
-            curveShape.isHidden = topTabsIsShowing
-        }
-    }
+    var topTabsIsShowing = false
 
     fileprivate var locationTextField: ToolbarTextField?
 
@@ -128,7 +125,7 @@ class URLBarView: UIView {
         locationView.translatesAutoresizingMaskIntoConstraints = false
         locationView.readerModeState = ReaderModeState.unavailable
         locationView.delegate = self
-      //  locationView.backgroundColor = self.backgroundColor
+        locationView.backgroundColor = .red
         return locationView
     }()
 
@@ -136,7 +133,7 @@ class URLBarView: UIView {
         let locationContainer = UIView()
         locationContainer.translatesAutoresizingMaskIntoConstraints = false
         locationContainer.backgroundColor = self.backgroundColor
-
+        locationContainer.backgroundColor = UIColor(rgb: 0xF7FAFC)
         // Enable clipping to apply the rounded edges to subviews.
         locationContainer.clipsToBounds = true
 
@@ -165,19 +162,18 @@ class URLBarView: UIView {
 
     fileprivate lazy var cancelButton: UIButton = {
         let cancelButton = InsetButton()
-        cancelButton.setTitleColor(UIColor.black, for: UIControlState())
+        cancelButton.setTitleColor(UIColor(rgb: 0x272727), for: UIControlState())
         let cancelTitle = NSLocalizedString("Cancel", comment: "Label for Cancel button")
         cancelButton.setTitle(cancelTitle, for: UIControlState())
         cancelButton.titleLabel?.font = UIConstants.DefaultChromeFont
         cancelButton.addTarget(self, action: #selector(URLBarView.SELdidClickCancel), for: UIControlEvents.touchUpInside)
-        cancelButton.titleEdgeInsets = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+        cancelButton.titleEdgeInsets = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 14)
         cancelButton.setContentHuggingPriority(1000, for: UILayoutConstraintAxis.horizontal)
         cancelButton.setContentCompressionResistancePriority(1000, for: UILayoutConstraintAxis.horizontal)
         cancelButton.alpha = 0
         return cancelButton
     }()
 
-    fileprivate lazy var curveShape: CurveView = { return CurveView() }()
 
     fileprivate lazy var scrollToTopButton: UIButton = {
         let button = UIButton()
@@ -408,12 +404,12 @@ class URLBarView: UIView {
     }
 
     func updateAlphaForSubviews(_ alpha: CGFloat) {
-        self.tabsButton.alpha = alpha
-        self.locationContainer.alpha = alpha
+      //  self.tabsButton.alpha = alpha
+       // self.locationContainer.alpha = alpha
       //  self.backgroundColor = URLBarViewUX.backgroundColorWithAlpha(1 - alpha)
         self.locationContainer.backgroundColor = self.backgroundColor
         self.locationView.backgroundColor = self.backgroundColor
-        self.actionButtons.forEach { $0.alpha = alpha }
+        //self.actionButtons.forEach { $0.alpha = alpha }
     }
 
     func updateTabCount(_ count: Int, animated: Bool = true) {
@@ -710,7 +706,8 @@ extension URLBarView: Themeable {
             log.error("Unable to apply unknown theme \(themeName)")
             return
         }
-
+        backgroundColor = theme.backgroundColor
+        locationTextField?.backgroundColor = backgroundColor
         currentTheme = themeName
         locationBorderColor = theme.borderColor!
         locationActiveBorderColor = theme.activeBorderColor!
@@ -753,71 +750,6 @@ private let H_M2 = 0.5
 private let H_M3 = 0.72
 private let H_M4 = 0.961
 
-/* Code for drawing the urlbar curve */
-private class CurveView: UIView {
-//    fileprivate lazy var leftCurvePath: UIBezierPath = {
-//        var leftArc = UIBezierPath(arcCenter: CGPoint(x: 5, y: 5), radius: CGFloat(5), startAngle: CGFloat(-Double.pi), endAngle: CGFloat(-(Double.pi / 2)), clockwise: true)
-//        leftArc.addLine(to: CGPoint(x: 0, y: 0))
-//        leftArc.addLine(to: CGPoint(x: 0, y: 5))
-//        leftArc.close()
-//        return leftArc
-//    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        commonInit()
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        commonInit()
-    }
-
-    fileprivate func commonInit() {
-        self.isOpaque = false
-        self.contentMode = .redraw
-    }
-
-    fileprivate func getWidthForHeight(_ height: Double) -> Double {
-        return height * ASPECT_RATIO
-    }
-
-    fileprivate func drawFromTop(_ path: UIBezierPath) {
-        let height: Double = Double(UIConstants.URLBarHeight)
-        let width = getWidthForHeight(height)
-        let from = (Double(self.frame.width) - width * 2 - Double(URLBarViewUX.URLBarCurveOffset - URLBarViewUX.URLBarCurveBounceBuffer), Double(0))
-
-        path.move(to: CGPoint(x: from.0, y: from.1))
-        path.addCurve(to: CGPoint(x: from.0 + width * W_M2, y: from.1 + height * H_M2),
-              controlPoint1: CGPoint(x: from.0 + width * W_M1, y: from.1),
-              controlPoint2: CGPoint(x: from.0 + width * W_M3, y: from.1 + height * H_M1))
-
-        path.addCurve(to: CGPoint(x: from.0 + width, y: from.1 + height),
-              controlPoint1: CGPoint(x: from.0 + width * W_M4, y: from.1 + height * H_M3),
-              controlPoint2: CGPoint(x: from.0 + width * W_M5, y: from.1 + height * H_M4))
-    }
-
-    fileprivate func getPath() -> UIBezierPath {
-        let path = UIBezierPath()
-        self.drawFromTop(path)
-        path.addLine(to: CGPoint(x: self.frame.width, y: UIConstants.URLBarHeight))
-        path.addLine(to: CGPoint(x: self.frame.width, y: 0))
-        path.addLine(to: CGPoint(x: 0, y: 0))
-        path.close()
-        return path
-    }
-
-    override func draw(_ rect: CGRect) {
-//        guard let context = UIGraphicsGetCurrentContext() else { return }
-//        context.saveGState()
-//        context.clear(rect)
-//        context.setFillColor(URLBarViewUX.backgroundColorWithAlpha(1).cgColor)
-//        getPath().fill()
-//       // leftCurvePath.fill()
-//        context.drawPath(using: CGPathDrawingMode.fill)
-//        context.restoreGState()
-    }
-}
 
 class ToolbarTextField: AutocompleteTextField {
     static let Themes: [String: Theme] = {
@@ -830,8 +762,9 @@ class ToolbarTextField: AutocompleteTextField {
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
-        theme.backgroundColor = UIColor.white
-        theme.textColor = UIColor.black
+        theme.backgroundColor = UIColor(rgb: 0xF7FAFC)
+        theme.textColor = UIColor(rgb: 0x272727)
+        theme.buttonTintColor = UIColor(rgb: 0x272727)
         theme.highlightColor = AutocompleteTextFieldUX.HighlightColor
         themes[Theme.NormalMode] = theme
 
@@ -852,26 +785,36 @@ class ToolbarTextField: AutocompleteTextField {
         super.init(frame: frame)
     }
 
+    override var backgroundColor: UIColor?  {
+        didSet {
+            print("whos doing this?")
+        }
+    }
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        
 
         // Since we're unable to change the tint color of the clear image, we need to iterate through the
         // subviews, find the clear button, and tint it ourselves. Thanks to Mikael Hellman for the tip:
         // http://stackoverflow.com/questions/27944781/how-to-change-the-tint-color-of-the-clear-button-on-a-uitextfield
         for view in subviews as [UIView] {
+
             if let button = view as? UIButton {
                 if let image = button.image(for: UIControlState()) {
                     if tintedClearImage == nil {
-                        tintedClearImage = tintImage(image, color: clearButtonTintColor)
+                        tintedClearImage = tintImage(image, color: .red)
                     }
 
                     if button.imageView?.image != tintedClearImage {
                         button.setImage(tintedClearImage, for: UIControlState())
+
                     }
+
                 }
             }
         }
@@ -884,10 +827,10 @@ class ToolbarTextField: AutocompleteTextField {
 
         UIGraphicsBeginImageContextWithOptions(size, false, 2)
         let context = UIGraphicsGetCurrentContext()!
-        image.draw(at: CGPoint.zero, blendMode: CGBlendMode.normal, alpha: 1.0)
+        image.draw(at: CGPoint.zero)
 
         context.setFillColor(color.cgColor)
-        context.setBlendMode(CGBlendMode.sourceIn)
+        context.setBlendMode(CGBlendMode.overlay)
         context.setAlpha(1.0)
 
         let rect = CGRect(
@@ -901,6 +844,8 @@ class ToolbarTextField: AutocompleteTextField {
         
         return tintedImage
     }
+
+
 }
 
 extension ToolbarTextField: Themeable {
@@ -910,10 +855,14 @@ extension ToolbarTextField: Themeable {
             return
         }
 
-       // backgroundColor = theme.backgroundColor
+        backgroundColor = theme.backgroundColor
+
 
         textColor = theme.textColor
         clearButtonTintColor = theme.buttonTintColor
         highlightColor = theme.highlightColor!
     }
+
+
+
 }

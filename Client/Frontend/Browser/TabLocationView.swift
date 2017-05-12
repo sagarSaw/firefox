@@ -20,8 +20,8 @@ protocol TabLocationViewDelegate {
 }
 
 struct TabLocationViewUX {
-    static let HostFontColor = UIColor.black
-    static let BaseURLFontColor = UIColor.gray
+    static let HostFontColor = UIColor(rgb: 0x272727)
+    static let BaseURLFontColor = UIColor(rgb: 0x272727)
     static let BaseURLPitch = 0.75
     static let HostPitch = 1.0
     static let LocationContentInset = 8
@@ -37,7 +37,7 @@ struct TabLocationViewUX {
         theme = Theme()
         theme.URLFontColor = BaseURLFontColor
         theme.hostFontColor = HostFontColor
-        theme.backgroundColor = UIColor.white
+        theme.backgroundColor = UIColor(rgb: 0xF7FAFC)
         themes[Theme.NormalMode] = theme
 
         return themes
@@ -154,8 +154,9 @@ class TabLocationView: UIView {
         addSubview(readerModeButton)
 
         lockImageView.snp.makeConstraints { make in
-            make.leading.centerY.equalTo(self)
-            make.width.equalTo(self.lockImageView.intrinsicContentSize.width + CGFloat(TabLocationViewUX.LocationContentInset * 2))
+            make.centerY.equalTo(self)
+            make.leading.equalTo(self).offset(4)
+            make.width.equalTo(self.lockImageView.intrinsicContentSize.width)
         }
 
         readerModeButton.snp.makeConstraints { make in

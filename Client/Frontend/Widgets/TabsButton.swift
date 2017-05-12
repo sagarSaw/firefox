@@ -10,13 +10,13 @@ import XCGLogger
 private let log = Logger.browserLogger
 
 struct TabsButtonUX {
-    static let TitleColor: UIColor = UIColor.black
-    static let TitleBackgroundColor: UIColor = UIColor.white
+    static let TitleColor: UIColor = UIColor(rgb: 0x272727)
+    static let TitleBackgroundColor: UIColor = UIColor(rgb: 0xF7FAFC)
     static let CornerRadius: CGFloat = 2
     static let TitleFont: UIFont = UIConstants.DefaultChromeSmallFontBold
     static let BorderStrokeWidth: CGFloat = 2
     static let BorderColor: UIColor = UIColor.clear
-    static let TitleInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+    static let TitleInsets = UIEdgeInsets(top: 12, left: 8, bottom: 12, right: 16)
 
     static let Themes: [String: Theme] = {
         var themes = [String: Theme]()
@@ -84,7 +84,7 @@ class TabsButton: UIControl {
         let view = UIView()
         view.clipsToBounds = false
         view.isUserInteractionEnabled = false
-        view.layer.borderColor = UIColor.black.cgColor
+        view.layer.borderColor = UIColor(rgb: 0x272727).cgColor
         view.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
         view.layer.borderWidth = 2
         return view

@@ -17,7 +17,7 @@ protocol AutocompleteTextFieldDelegate: class {
 }
 
 struct AutocompleteTextFieldUX {
-    static let HighlightColor = UIColor(rgb: 0xccdded)
+    static let HighlightColor = UIColor(rgb: 0xe4e4e4)
 }
 
 class AutocompleteTextField: UITextField, UITextFieldDelegate {
@@ -45,6 +45,7 @@ class AutocompleteTextField: UITextField, UITextFieldDelegate {
                 let selectedStart = offset(from: beginningOfDocument, to: selectedTextRange.start)
                 let selectedLength = offset(from: selectedTextRange.start, to: selectedTextRange.end)
                 attributedString.addAttribute(NSBackgroundColorAttributeName, value: highlightColor, range: NSRange(location: selectedStart, length: selectedLength))
+
                 attributedText = attributedString
             }
         }
@@ -65,6 +66,7 @@ class AutocompleteTextField: UITextField, UITextFieldDelegate {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         commonInit()
+
     }
 
     fileprivate func commonInit() {

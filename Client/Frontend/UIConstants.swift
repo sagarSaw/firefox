@@ -26,7 +26,7 @@ public struct UIConstants {
     static let SnackbarButtonHeight: CGFloat = 48
 
     // Static fonts
-    static let DefaultChromeSize: CGFloat = 14
+    static let DefaultChromeSize: CGFloat = 15
     static let DefaultChromeSmallSize: CGFloat = 11
     static let PasscodeEntryFontSize: CGFloat = 36
     static let DefaultChromeFont: UIFont = UIFont.systemFont(ofSize: DefaultChromeSize, weight: UIFontWeightRegular)
