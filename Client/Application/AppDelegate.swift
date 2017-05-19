@@ -11,6 +11,7 @@ import WebImage
 import SwiftKeychainWrapper
 import LocalAuthentication
 import Telemetry
+import FLEX
 
 private let log = Logger.browserLogger
 
@@ -48,6 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         self.launchOptions = launchOptions
 
         log.debug("Configuring window…")
+
+        FLEXManager.shared().showExplorer()
 
         self.window = UIWindow(frame: UIScreen.main.bounds)
         self.window!.backgroundColor = UIConstants.AppBackgroundColor

@@ -43,6 +43,16 @@ protocol TabToolbarDelegate: class {
     func tabToolbarDidPressHomePage(_ tabToolbar: TabToolbarProtocol, button: UIButton)
 }
 
+class ToolbarButton: UIButton {
+    var highlightedTintColor: UIColor?
+    var normalTintColor: UIColor?
+    override open var isHighlighted: Bool {
+        didSet {
+            self.tintColor = isHighlighted ? (highlightedTintColor ?? self.tintColor) : (self.normalTintColor ?? self.tintColor)
+        }
+    }
+}
+
 @objc
 open class TabToolbarHelper: NSObject {
     let toolbar: TabToolbarProtocol
@@ -73,7 +83,8 @@ open class TabToolbarHelper: NSObject {
     }
 
     fileprivate func setTintColor(_ color: UIColor, forButtons buttons: [UIButton]) {
-        buttons.forEach { $0.tintColor = color }
+        let buttons = buttons as! [ToolbarButton]
+        buttons.forEach { $0.tintColor = color; $0.highlightedTintColor = UIColor(rgb: 0x00A2FE); $0.normalTintColor = color }
     }
 
     init(toolbar: TabToolbarProtocol) {
@@ -81,7 +92,9 @@ open class TabToolbarHelper: NSObject {
         super.init()
 
         toolbar.backButton.setImage(UIImage.templateImageNamed("bottomNav-back"), for: .normal)
-        toolbar.backButton.setImage(UIImage(named: "bottomNav-backEngaged"), for: .highlighted)
+
+
+
         toolbar.backButton.accessibilityLabel = NSLocalizedString("Back", comment: "Accessibility label for the Back button in the tab toolbar.")
         //toolbar.backButton.accessibilityHint = NSLocalizedString("Double tap and hold to open history", comment: "Accessibility hint, associated to the Back button in the tab toolbar, used by assistive technology to describe the result of a double tap.")
         let longPressGestureBackButton = UILongPressGestureRecognizer(target: self, action: #selector(TabToolbarHelper.SELdidLongPressBack(_:)))
@@ -89,7 +102,8 @@ open class TabToolbarHelper: NSObject {
         toolbar.backButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickBack), for: UIControlEvents.touchUpInside)
 
         toolbar.forwardButton.setImage(UIImage.templateImageNamed("bottomNav-forward"), for: .normal)
-        toolbar.forwardButton.setImage(UIImage(named: "bottomNav-forwardEngaged"), for: .highlighted)
+        toolbar.forwardButton.setImage(UIImage.templateImageNamed("bottomNav-forward")?.applyTintEffect(with: UIColor(rgb: 0x00a2fe)), for: .highlighted)
+        //toolbar.forwardButton.se
         toolbar.forwardButton.accessibilityLabel = NSLocalizedString("Forward", comment: "Accessibility Label for the tab toolbar Forward button")
         //toolbar.forwardButton.accessibilityHint = NSLocalizedString("Double tap and hold to open history", comment: "Accessibility hint, associated to the Back button in the tab toolbar, used by assistive technology to describe the result of a double tap.")
         let longPressGestureForwardButton = UILongPressGestureRecognizer(target: self, action: #selector(TabToolbarHelper.SELdidLongPressForward(_:)))
@@ -213,21 +227,23 @@ class TabToolbar: Toolbar, TabToolbarProtocol {
     // This has to be here since init() calls it
     fileprivate override init(frame: CGRect) {
         // And these have to be initialized in here or the compiler will get angry
-        backButton = UIButton()
+        backButton = ToolbarButton()
         backButton.accessibilityIdentifier = "TabToolbar.backButton"
-        forwardButton = UIButton()
+        forwardButton = ToolbarButton()
         forwardButton.accessibilityIdentifier = "TabToolbar.forwardButton"
-        stopReloadButton = UIButton()
+        stopReloadButton = ToolbarButton()
         stopReloadButton.accessibilityIdentifier = "TabToolbar.stopReloadButton"
-        shareButton = UIButton()
+        shareButton = ToolbarButton()
         shareButton.accessibilityIdentifier = "TabToolbar.shareButton"
-        bookmarkButton = UIButton()
+        bookmarkButton = ToolbarButton()
         bookmarkButton.accessibilityIdentifier = "TabToolbar.bookmarkButton"
-        menuButton = UIButton()
+        menuButton = ToolbarButton()
         menuButton.accessibilityIdentifier = "TabToolbar.menuButton"
-        homePageButton = UIButton()
+        homePageButton = ToolbarButton()
         menuButton.accessibilityIdentifier = "TabToolbar.homePageButton"
         actionButtons = [backButton, forwardButton, menuButton, stopReloadButton, shareButton, homePageButton]
+
+
 
         super.init(frame: frame)
 

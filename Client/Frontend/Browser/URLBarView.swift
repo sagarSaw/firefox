@@ -28,7 +28,7 @@ struct URLBarViewUX {
     static let URLBarMinimumOffsetToAnimate: CGFloat = 30
     // buffer so we dont see edges when animation overshoots with spring
     static let URLBarCurveBounceBuffer: CGFloat = 8
-    static let ProgressTintColor = UIColor(red:1, green:0.32, blue:0, alpha:1)
+    static let ProgressTintColor = UIColor(rgb: 0x00A2FE)
 
     static let TabsButtonRotationOffset: CGFloat = 1.5
     static let TabsButtonHeight: CGFloat = 18.0
@@ -155,7 +155,11 @@ class URLBarView: UIView {
     fileprivate lazy var progressBar: UIProgressView = {
         let progressBar = UIProgressView()
         progressBar.progressTintColor = URLBarViewUX.ProgressTintColor
+        progressBar.backgroundColor = .clear
+        progressBar.trackTintColor = .clear
         progressBar.alpha = 0
+        progressBar.layer.cornerRadius = 3
+        progressBar.layer.cornerRadius = 1
         progressBar.isHidden = true
         return progressBar
     }()
@@ -181,23 +185,23 @@ class URLBarView: UIView {
         return button
     }()
 
-    var shareButton: UIButton = UIButton()
+    var shareButton: UIButton = ToolbarButton()
 
-    var menuButton: UIButton = UIButton()
+    var menuButton: UIButton = ToolbarButton()
 
-    var bookmarkButton: UIButton = UIButton()
+    var bookmarkButton: UIButton = ToolbarButton()
 
-    var forwardButton: UIButton = UIButton()
+    var forwardButton: UIButton = ToolbarButton()
 
     var backButton: UIButton = {
-        let backButton = UIButton()
+        let backButton = ToolbarButton()
         backButton.accessibilityIdentifier = "URLBarView.backButton"
         return backButton
     }()
 
-    var stopReloadButton: UIButton = UIButton()
+    var stopReloadButton: UIButton = ToolbarButton()
 
-    var homePageButton: UIButton = UIButton()
+    var homePageButton: UIButton = ToolbarButton()
 
     lazy var actionButtons: [UIButton] = [self.shareButton, self.menuButton, self.forwardButton, self.backButton, self.stopReloadButton, self.homePageButton]
 
@@ -229,7 +233,6 @@ class URLBarView: UIView {
        // addSubview(curveShape)
         addSubview(scrollToTopButton)
 
-        addSubview(progressBar)
         addSubview(tabsButton)
         addSubview(cancelButton)
 
@@ -242,6 +245,16 @@ class URLBarView: UIView {
 
         locationContainer.addSubview(locationView)
         addSubview(locationContainer)
+
+        let line = UIView()
+        line.backgroundColor = UIColor(rgb: 0xe4e4e4)
+        addSubview(line)
+        addSubview(progressBar)
+
+        line.snp.makeConstraints { make in
+            make.bottom.leading.trailing.equalTo(self)
+            make.height.equalTo(1)
+        }
 
         helper = TabToolbarHelper(toolbar: self)
         setupConstraints()
@@ -258,7 +271,8 @@ class URLBarView: UIView {
         }
 
         progressBar.snp.makeConstraints { make in
-            make.top.equalTo(self.snp.bottom)
+            make.top.equalTo(self.snp.bottom).offset(-2)
+            make.height.equalTo(3)
             make.width.equalTo(self)
         }
 
@@ -274,7 +288,7 @@ class URLBarView: UIView {
         tabsButton.snp.makeConstraints { make in
             make.centerY.equalTo(self.locationContainer)
             make.trailing.equalTo(self)
-            make.size.equalTo(UIConstants.ToolbarHeight)
+            make.size.equalTo(UIConstants.URLBarHeight)
         }
 
 
@@ -328,13 +342,13 @@ class URLBarView: UIView {
                 tabsButton.snp.remakeConstraints { make in
                     make.centerY.equalTo(self.locationContainer)
                     make.leading.equalTo(self.snp.trailing)
-                    make.size.equalTo(UIConstants.ToolbarHeight)
+                    make.size.equalTo(UIConstants.URLBarHeight)
                 }
             } else {
                 tabsButton.snp.remakeConstraints { make in
                     make.centerY.equalTo(self.locationContainer)
                     make.trailing.equalTo(self)
-                    make.size.equalTo(UIConstants.ToolbarHeight)
+                    make.size.equalTo(UIConstants.URLBarHeight)
                 }
             }
             self.locationContainer.snp.remakeConstraints { make in
@@ -345,7 +359,7 @@ class URLBarView: UIView {
                 } else {
                     // Otherwise, left align the location view
                     make.leading.equalTo(self).offset(URLBarViewUX.LocationLeftPadding)
-                    make.trailing.equalTo(self.tabsButton.snp.leading).offset(-14)
+                    make.trailing.equalTo(self.tabsButton.snp.leading)
                 }
 
                 make.height.equalTo(URLBarViewUX.LocationHeight)

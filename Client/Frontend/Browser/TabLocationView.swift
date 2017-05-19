@@ -185,11 +185,11 @@ class TabLocationView: UIView {
             if lockImageView.isHidden {
                 make.leading.equalTo(self).offset(TabLocationViewUX.LocationContentInset)
             } else {
-                make.leading.equalTo(self.lockImageView.snp.trailing)
+                make.leading.equalTo(self.lockImageView.snp.trailing).offset(6)
             }
 
             if readerModeButton.isHidden {
-                make.trailing.equalTo(self).offset(-TabLocationViewUX.LocationContentInset)
+                make.trailing.equalTo(self)
             } else {
                 make.trailing.equalTo(self.readerModeButton.snp.leading)
             }

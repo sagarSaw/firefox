@@ -139,7 +139,9 @@ class TabsButton: UIControl {
             make.edges.equalTo(insideButton)
         }
         insideButton.snp.remakeConstraints { (make) -> Void in
-            make.edges.equalTo(self).inset(insets)
+            make.size.equalTo(16)
+            make.centerY.equalTo(self).offset(-2)
+            make.centerX.equalTo(self)
         }
 
         line.snp.makeConstraints { make in

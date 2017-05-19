@@ -216,8 +216,8 @@ class BrowserViewController: UIViewController {
             toolbar?.tabToolbarDelegate = self
             footerBackground = BlurWrapper(view: toolbar!)
             footerBackground?.translatesAutoresizingMaskIntoConstraints = false
-            footerBackground?.backgroundColor = UIColor(rgb: 0xF7FAFC)
-
+            footerBackground?.backgroundColor = UIColor(rgb: 0xf9f9fa)
+            footerBackground?.alpha = 0.9
             // Need to reset the proper blur style
             if let selectedTab = tabManager.selectedTab, selectedTab.isPrivate {
                 footerBackground!.blurStyle = .dark
@@ -455,7 +455,7 @@ class BrowserViewController: UIViewController {
         urlBar.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalTo(urlBarTopTabsContainer)
             make.height.equalTo(UIConstants.URLBarHeight)
-            make.top.equalTo(0)
+            make.top.equalTo(topTabsContainer.snp.bottom)
         }
 
         header.snp.makeConstraints { make in
