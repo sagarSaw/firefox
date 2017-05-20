@@ -11,7 +11,7 @@ import Shared
 
 struct TabTrayControllerUX {
     static let CornerRadius = CGFloat(4.0)
-    static let BackgroundColor = UIConstants.AppBackgroundColor
+    static let BackgroundColor = UIColor.black
     static let CellBackgroundColor = UIColor(red:0.95, green:0.95, blue:0.95, alpha:1)
     static let TextBoxHeight = CGFloat(32.0)
     static let FaviconSize = CGFloat(18.0)
@@ -166,6 +166,10 @@ class TabCell: UICollectionViewCell {
         title.addSubview(self.closeButton)
         title.addSubview(self.titleText)
         title.addSubview(self.favicon)
+
+//        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+//            appDelegate.window?.backgroundColor = .black
+//        }
 
         backgroundHolder.addSubview(title)
         self.title = title

@@ -8,16 +8,16 @@ import Shared
 public struct UIConstants {
     static let AboutHomePage = URL(string: "\(WebServer.sharedInstance.base)/about/home/")!
 
-    static let AppBackgroundColor = UIColor.black
+    static let AppBackgroundColor = UIColor(rgb: 0xF7FAFC)
     static let SystemBlueColor = UIColor(red: 0 / 255, green: 122 / 255, blue: 255 / 255, alpha: 1)
-    static let PrivateModePurple = UIColor(red: 207 / 255, green: 104 / 255, blue: 255 / 255, alpha: 1)
-    static let PrivateModeLocationBackgroundColor = UIColor(red: 31 / 255, green: 31 / 255, blue: 31 / 255, alpha: 1)
-    static let PrivateModeLocationBorderColor = UIColor(red: 255, green: 255, blue: 255, alpha: 0.15)
-    static let PrivateModeActionButtonTintColor = UIColor(red: 255, green: 255, blue: 255, alpha: 0.8)
-    static let PrivateModeTextHighlightColor = UIColor(red: 207 / 255, green: 104 / 255, blue: 255 / 255, alpha: 1)
+    static let PrivateModePurple = UIColor(rgb: 0x9400ff)
+    static let PrivateModeLocationBackgroundColor = UIColor(rgb: 0x38383D)
+    static let PrivateModeLocationBorderColor = UIColor(rgb: 0x38383D)
+    static let PrivateModeActionButtonTintColor = UIColor.white
+    static let PrivateModeTextHighlightColor = UIColor.white
     static let PrivateModeInputHighlightColor = UIColor(red: 120 / 255, green: 120 / 255, blue: 165 / 255, alpha: 1)
-    static let PrivateModeAssistantToolbarBackgroundColor = UIColor(red: 89 / 255, green: 89 / 255, blue: 89 / 255, alpha: 1)
-    static let PrivateModeToolbarTintColor = UIColor(red: 74 / 255, green: 74 / 255, blue: 74 / 255, alpha: 1)
+    static let PrivateModeAssistantToolbarBackgroundColor = UIColor(rgb: 0x38383D)
+    static let PrivateModeToolbarTintColor = UIColor(rgb: 0x38383D)
 
     static let URLBarHeight: CGFloat = 56
     static let ToolbarHeight: CGFloat = 48
@@ -47,11 +47,11 @@ public struct UIConstants {
 
     // These colours are used on the Menu
     static let MenuToolbarBackgroundColorNormal = UIColor(red: 241/255, green: 241/255, blue: 241/255, alpha: 1.0)
-    static let MenuToolbarBackgroundColorPrivate = UIColor(red: 74/255, green: 74/255, blue: 74/255, alpha: 1.0)
+    static let MenuToolbarBackgroundColorPrivate = UIColor(rgb: 0x38383D)
     static let MenuToolbarTintColorNormal = BackgroundColor
     static let MenuToolbarTintColorPrivate = UIColor.white
     static let MenuBackgroundColorNormal = UIColor(red: 223/255, green: 223/255, blue: 223/255, alpha: 1.0)
-    static let MenuBackgroundColorPrivate = UIColor(red: 59/255, green: 59/255, blue: 59/255, alpha: 1.0)
+    static let MenuBackgroundColorPrivate = UIColor(rgb: 0x38383D)
     static let MenuSelectedItemTintColor = UIColor(red: 0.30, green: 0.62, blue: 1.0, alpha: 1.0)
     static let MenuDisabledItemTintColor = UIColor.lightGray
 

@@ -84,11 +84,11 @@ class BrowserViewController: UIViewController {
     let tabManager: TabManager
 
     // These views wrap the urlbar and toolbar to provide background effects on them
-    var header: BlurWrapper!
+    var header: UIView!
     var headerBackdrop: UIView!
     var footer: UIView!
     var footerBackdrop: UIView!
-    fileprivate var footerBackground: BlurWrapper?
+    fileprivate var footerBackground: UIView?
     fileprivate var topTouchArea: UIButton!
     let urlBarTopTabsContainer = UIView(frame: CGRect.zero)
 
@@ -213,18 +213,21 @@ class BrowserViewController: UIViewController {
 
         if showToolbar {
             toolbar = TabToolbar()
+            toolbar?.alpha = 0.9
             toolbar?.tabToolbarDelegate = self
-            footerBackground = BlurWrapper(view: toolbar!)
+            footerBackground = toolbar
             footerBackground?.translatesAutoresizingMaskIntoConstraints = false
-            footerBackground?.backgroundColor = UIColor(rgb: 0xf9f9fa)
+          //  footerBackground?.backgroundColor = UIColor(rgb: 0xf9f9fa)
+            //footerBackground?.backgroundColor = .clear
             footerBackground?.alpha = 0.9
             // Need to reset the proper blur style
             if let selectedTab = tabManager.selectedTab, selectedTab.isPrivate {
-                footerBackground!.blurStyle = .dark
+               // footerBackground!.blurStyle = .dark
                 toolbar?.applyTheme(Theme.PrivateMode)
             }
             footer.addSubview(footerBackground!)
-            footer.backgroundColor = UIColor(rgb: 0xF7FAFC)
+            footer.alpha = 0.9
+            footer.backgroundColor = .clear
         }
         
         if showTopTabs {
@@ -243,7 +246,7 @@ class BrowserViewController: UIViewController {
             topTabsContainer.snp.updateConstraints { make in
                 make.height.equalTo(TopTabsUX.TopTabsViewHeight)
             }
-            header.disableBlur = true
+           // header.disableBlur = true
         } else {
             topTabsContainer.snp.updateConstraints { make in
                 make.height.equalTo(0)
@@ -251,7 +254,7 @@ class BrowserViewController: UIViewController {
             topTabsViewController?.view.removeFromSuperview()
             topTabsViewController?.removeFromParentViewController()
             topTabsViewController = nil
-            header.disableBlur = false
+           // header.disableBlur = true
         }
 
         view.setNeedsUpdateConstraints()
@@ -353,8 +356,7 @@ class BrowserViewController: UIViewController {
 
         log.debug("BVC adding footer and header…")
         footerBackdrop = UIView()
-        footerBackdrop.backgroundColor = UIColor.white
-        footerBackdrop.backgroundColor = UIColor(rgb: 0xF7FAFC)
+        footerBackdrop.backgroundColor = .clear
         view.addSubview(footerBackdrop)
         headerBackdrop = UIView()
         headerBackdrop.backgroundColor = UIColor.white
@@ -373,7 +375,7 @@ class BrowserViewController: UIViewController {
         log.debug("BVC setting up status bar…")
         // Temporary work around for covering the non-clipped web view content
         statusBarOverlay = UIView()
-        statusBarOverlay.backgroundColor = UIColor(rgb: 0xF7FAFC)
+        statusBarOverlay.backgroundColor = .clear
         //statusBarOverlay.backgroundColor = UIColor(rgb: 0xF7FAFC)
         view.addSubview(statusBarOverlay)
 
@@ -389,8 +391,9 @@ class BrowserViewController: UIViewController {
         urlBar.translatesAutoresizingMaskIntoConstraints = false
         urlBar.delegate = self
         urlBar.tabToolbarDelegate = self
-        header = BlurWrapper(view: urlBarTopTabsContainer)
+        header = urlBarTopTabsContainer
         urlBarTopTabsContainer.addSubview(urlBar)
+        urlBarTopTabsContainer.backgroundColor = .clear
         urlBarTopTabsContainer.addSubview(topTabsContainer)
         view.addSubview(header)
 
@@ -423,7 +426,7 @@ class BrowserViewController: UIViewController {
 
         footer = UIView()
         footer.backgroundColor = UIColor(rgb: 0xF7FAFC)
-
+        footer.backgroundColor = .clear
         self.view.addSubview(footer)
         self.view.addSubview(snackBars)
         snackBars.backgroundColor = UIColor.clear
@@ -526,6 +529,8 @@ class BrowserViewController: UIViewController {
         log.debug("BVC viewWillAppear.")
         super.viewWillAppear(animated)
         log.debug("BVC super.viewWillAppear done.")
+
+    
 
         // On iPhone, if we are about to show the On-Boarding, blank out the tab so that it does
         // not flash before we present. This change of alpha also participates in the animation when
@@ -653,7 +658,7 @@ class BrowserViewController: UIViewController {
     func resetBrowserChrome() {
         // animate and reset transform for tab chrome
         urlBar.updateAlphaForSubviews(1)
-        footer.alpha = 1
+        footer.alpha = 0.9
 
         [header,
             footer,
@@ -3308,16 +3313,18 @@ extension BrowserViewController: Themeable {
 
         topTabsViewController?.applyTheme(themeName)
 
-        switch themeName {
-        case Theme.NormalMode:
-            header.blurStyle = .extraLight
-            footerBackground?.blurStyle = .extraLight
-        case Theme.PrivateMode:
-            header.blurStyle = .dark
-            footerBackground?.blurStyle = .dark
-        default:
-            log.debug("Unknown Theme \(themeName)")
-        }
+
+
+//        switch themeName {
+//        case Theme.NormalMode:
+//         //   header.blurStyle = .extraLight
+//         //   footerBackground?.blurStyle = .extraLight
+//        case Theme.PrivateMode:
+//           // header.blurStyle = .dark
+//           // footerBackground?.blurStyle = .dark
+//        default:
+//            log.debug("Unknown Theme \(themeName)")
+//        }
     }
 }
 

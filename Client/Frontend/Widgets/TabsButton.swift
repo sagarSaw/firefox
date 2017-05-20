@@ -21,19 +21,19 @@ struct TabsButtonUX {
     static let Themes: [String: Theme] = {
         var themes = [String: Theme]()
         var theme = Theme()
-        theme.borderColor = UIConstants.PrivateModePurple
+        theme.borderColor = .white
         theme.borderWidth = BorderStrokeWidth
-        theme.font = UIConstants.DefaultChromeBoldFont
-        theme.backgroundColor = UIConstants.AppBackgroundColor
-        theme.textColor = UIConstants.PrivateModePurple
-        theme.insets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        theme.font = TitleFont
+        theme.backgroundColor = UIConstants.PrivateModeLocationBackgroundColor
+        theme.textColor = .white
+        theme.insets = TitleInsets
         theme.highlightButtonColor = UIConstants.PrivateModePurple
-        theme.highlightTextColor = TabsButtonUX.TitleColor
-        theme.highlightBorderColor = UIConstants.PrivateModePurple
+        theme.highlightTextColor = .white
+        theme.highlightBorderColor = .white
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
-        theme.borderColor = BorderColor
+        theme.borderColor = UIColor(rgb: 0x272727)
         theme.borderWidth = BorderStrokeWidth
         theme.font = TitleFont
         theme.backgroundColor = TitleBackgroundColor
@@ -84,7 +84,7 @@ class TabsButton: UIControl {
         let view = UIView()
         view.clipsToBounds = false
         view.isUserInteractionEnabled = false
-        view.layer.borderColor = UIColor(rgb: 0x272727).cgColor
+        view.layer.borderColor = self.borderColor.cgColor
         view.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
         view.layer.borderWidth = 2
         return view
@@ -275,7 +275,7 @@ extension TabsButton: Themeable {
 extension TabsButton {
     dynamic var borderColor: UIColor {
         get { return borderView.color }
-        set { borderView.color = newValue }
+        set { borderView.color = newValue; line.backgroundColor = newValue }
     }
 
     dynamic var borderWidth: CGFloat {

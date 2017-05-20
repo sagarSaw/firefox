@@ -19,6 +19,8 @@ struct Theme {
     var highlightButtonColor: UIColor?
     var highlightBorderColor: UIColor?
     var highlightTextColor: UIColor?
+    var seperatorColor: UIColor?
+    
 
     static let PrivateMode = "Private"
     static let NormalMode = "Normal"

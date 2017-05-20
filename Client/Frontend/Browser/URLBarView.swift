@@ -41,15 +41,20 @@ struct URLBarViewUX {
         theme.activeBorderColor = UIConstants.PrivateModePurple
         theme.tintColor = UIConstants.PrivateModePurple
         theme.textColor = UIColor.white
+        theme.backgroundColor = UIConstants.PrivateModeLocationBorderColor
         theme.buttonTintColor = UIConstants.PrivateModeActionButtonTintColor
+        theme.seperatorColor = UIColor(rgb: 0x737373)
+
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
         theme.borderColor = TextFieldBorderColor
         theme.activeBorderColor = TextFieldActiveBorderColor
+        theme.backgroundColor = UIColor(rgb: 0xf7fafc)
         theme.tintColor = ProgressTintColor
         theme.textColor = UIColor(rgb: 0x272727)
-        theme.buttonTintColor = UIColor(rgb: 0x272727)
+        theme.buttonTintColor = UIColor.darkGray
+        theme.seperatorColor = UIColor(rgb: 0xe4e4e4)
         themes[Theme.NormalMode] = theme
 
         return themes
@@ -228,6 +233,8 @@ class URLBarView: UIView {
         commonInit()
     }
 
+    let line = UIView()
+
     fileprivate func commonInit() {
         backgroundColor = UIColor(rgb: 0xF7FAFC)
        // addSubview(curveShape)
@@ -246,8 +253,8 @@ class URLBarView: UIView {
         locationContainer.addSubview(locationView)
         addSubview(locationContainer)
 
-        let line = UIView()
-        line.backgroundColor = UIColor(rgb: 0xe4e4e4)
+
+        line.backgroundColor = seperatorColor
         addSubview(line)
         addSubview(progressBar)
 
@@ -700,6 +707,11 @@ extension URLBarView {
         set { return cancelButton.setTitleColor(newValue, for: UIControlState()) }
     }
 
+    dynamic var seperatorColor: UIColor? {
+        get { return self.line.backgroundColor }
+        set { return self.line.backgroundColor = newValue }
+    }
+
     dynamic var actionButtonTintColor: UIColor? {
         get { return helper?.buttonTintColor }
         set {
@@ -728,7 +740,12 @@ extension URLBarView: Themeable {
         progressBarTint = theme.tintColor
         cancelTextColor = theme.textColor
         actionButtonTintColor = theme.buttonTintColor
-
+        seperatorColor = theme.seperatorColor
+        //tabsButton
+        //line #737373
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            appDelegate.window?.backgroundColor = theme.backgroundColor
+        }
         tabsButton.applyTheme(themeName)
     }
 }
@@ -821,7 +838,7 @@ class ToolbarTextField: AutocompleteTextField {
             if let button = view as? UIButton {
                 if let image = button.image(for: UIControlState()) {
                     if tintedClearImage == nil {
-                        tintedClearImage = tintImage(image, color: .red)
+                        tintedClearImage = tintImage(image, color: .clear)
                     }
 
                     if button.imageView?.image != tintedClearImage {

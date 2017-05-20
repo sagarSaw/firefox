@@ -46,9 +46,21 @@ protocol TabToolbarDelegate: class {
 class ToolbarButton: UIButton {
     var highlightedTintColor: UIColor?
     var normalTintColor: UIColor?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.adjustsImageWhenHighlighted = false
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override open var isHighlighted: Bool {
         didSet {
             self.tintColor = isHighlighted ? (highlightedTintColor ?? self.tintColor) : (self.normalTintColor ?? self.tintColor)
+            self.imageView?.tintColor = self.tintColor
+
         }
     }
 }
@@ -72,11 +84,11 @@ open class TabToolbarHelper: NSObject {
         didSet {
             if loading {
                 toolbar.stopReloadButton.setImage(ImageStop, for: .normal)
-                toolbar.stopReloadButton.setImage(ImageStopPressed, for: .highlighted)
+               // toolbar.stopReloadButton.setImage(ImageStopPressed, for: .highlighted)
                 toolbar.stopReloadButton.accessibilityLabel = NSLocalizedString("Stop", comment: "Accessibility Label for the tab toolbar Stop button")
             } else {
                 toolbar.stopReloadButton.setImage(ImageReload, for: .normal)
-                toolbar.stopReloadButton.setImage(ImageReloadPressed, for: .highlighted)
+              //  toolbar.stopReloadButton.setImage(ImageReloadPressed, for: .highlighted)
                 toolbar.stopReloadButton.accessibilityLabel = NSLocalizedString("Reload", comment: "Accessibility Label for the tab toolbar Reload button")
             }
         }
@@ -102,7 +114,7 @@ open class TabToolbarHelper: NSObject {
         toolbar.backButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickBack), for: UIControlEvents.touchUpInside)
 
         toolbar.forwardButton.setImage(UIImage.templateImageNamed("bottomNav-forward"), for: .normal)
-        toolbar.forwardButton.setImage(UIImage.templateImageNamed("bottomNav-forward")?.applyTintEffect(with: UIColor(rgb: 0x00a2fe)), for: .highlighted)
+   //     toolbar.forwardButton.setImage(UIImage.templateImageNamed("bottomNav-forward")?.applyTintEffect(with: UIColor(rgb: 0x00a2fe)), for: .highlighted)
         //toolbar.forwardButton.se
         toolbar.forwardButton.accessibilityLabel = NSLocalizedString("Forward", comment: "Accessibility Label for the tab toolbar Forward button")
         //toolbar.forwardButton.accessibilityHint = NSLocalizedString("Double tap and hold to open history", comment: "Accessibility hint, associated to the Back button in the tab toolbar, used by assistive technology to describe the result of a double tap.")
@@ -111,19 +123,19 @@ open class TabToolbarHelper: NSObject {
         toolbar.forwardButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickForward), for: UIControlEvents.touchUpInside)
 
         toolbar.stopReloadButton.setImage(UIImage.templateImageNamed("bottomNav-refresh"), for: .normal)
-        toolbar.stopReloadButton.setImage(UIImage(named: "bottomNav-refreshEngaged"), for: .highlighted)
+//        toolbar.stopReloadButton.setImage(UIImage(named: "bottomNav-refreshEngaged"), for: .highlighted)
         toolbar.stopReloadButton.accessibilityLabel = NSLocalizedString("Reload", comment: "Accessibility Label for the tab toolbar Reload button")
         let longPressGestureStopReloadButton = UILongPressGestureRecognizer(target: self, action: #selector(TabToolbarHelper.SELdidLongPressStopReload(_:)))
         toolbar.stopReloadButton.addGestureRecognizer(longPressGestureStopReloadButton)
         toolbar.stopReloadButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickStopReload), for: UIControlEvents.touchUpInside)
 
         toolbar.shareButton.setImage(UIImage.templateImageNamed("bottomNav-send"), for: .normal)
-        toolbar.shareButton.setImage(UIImage(named: "bottomNav-sendEngaged"), for: .highlighted)
+      //  toolbar.shareButton.setImage(UIImage(named: "bottomNav-sendEngaged"), for: .highlighted)
         toolbar.shareButton.accessibilityLabel = NSLocalizedString("Share", comment: "Accessibility Label for the tab toolbar Share button")
         toolbar.shareButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickShare), for: UIControlEvents.touchUpInside)
 
         toolbar.homePageButton.setImage(UIImage.templateImageNamed("menu-Home"), for: .normal)
-        toolbar.homePageButton.setImage(UIImage(named: "menu-Home-Engaged"), for: .highlighted)
+      //  toolbar.homePageButton.setImage(UIImage(named: "menu-Home-Engaged"), for: .highlighted)
         toolbar.homePageButton.accessibilityLabel = NSLocalizedString("Toolbar.OpenHomePage.AccessibilityLabel", value: "Homepage", comment: "Accessibility Label for the tab toolbar Homepage button")
         toolbar.homePageButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickHomePage), for: UIControlEvents.touchUpInside)
 
@@ -215,10 +227,12 @@ class TabToolbar: Toolbar, TabToolbarProtocol {
         var themes = [String: Theme]()
         var theme = Theme()
         theme.buttonTintColor = UIConstants.PrivateModeActionButtonTintColor
+        theme.backgroundColor = UIColor(rgb: 0x38383D)
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
         theme.buttonTintColor = UIColor.darkGray
+        theme.backgroundColor = UIColor(rgb: 0xf7fafc)
         themes[Theme.NormalMode] = theme
 
         return themes
@@ -313,6 +327,7 @@ extension TabToolbar: Themeable {
             return
         }
         actionButtonTintColor = theme.buttonTintColor!
+        self.backgroundColor = theme.backgroundColor
     }
 }
 
