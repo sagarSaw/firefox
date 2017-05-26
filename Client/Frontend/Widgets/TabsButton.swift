@@ -28,8 +28,8 @@ struct TabsButtonUX {
         theme.textColor = .white
         theme.insets = TitleInsets
         theme.highlightButtonColor = UIConstants.PrivateModePurple
-        theme.highlightTextColor = .white
-        theme.highlightBorderColor = .white
+        theme.highlightTextColor =  UIColor(rgb: 0xAC39FF)
+        theme.highlightBorderColor = UIColor(rgb: 0xAC39FF)
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
@@ -40,8 +40,8 @@ struct TabsButtonUX {
         theme.textColor = TitleColor
         theme.insets = TitleInsets
         theme.highlightButtonColor = TabsButtonUX.TitleColor
-        theme.highlightTextColor = TabsButtonUX.TitleBackgroundColor
-        theme.highlightBorderColor = TabsButtonUX.TitleBackgroundColor
+        theme.highlightTextColor =  UIColor(rgb: 0x00A2FE)
+        theme.highlightBorderColor = UIColor(rgb: 0x00A2FE)
         themes[Theme.NormalMode] = theme
 
         return themes
@@ -55,11 +55,11 @@ class TabsButton: UIControl {
         didSet {
             if isHighlighted {
                 borderColor = theme.highlightBorderColor!
-                titleBackgroundColor = theme.highlightButtonColor
+                //titleBackgroundColor = theme.highlightButtonColor
                 textColor = theme.highlightTextColor
             } else {
                 borderColor = theme.borderColor!
-                titleBackgroundColor = theme.backgroundColor
+               // titleBackgroundColor = theme.backgroundColor
                 textColor = theme.textColor
             }
         }

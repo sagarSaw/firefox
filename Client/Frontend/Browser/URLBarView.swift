@@ -17,7 +17,7 @@ struct URLBarViewUX {
     static let LocationLeftPadding = 6
 
     static let LocationHeight = 28
-    static let LocationContentOffset: CGFloat = 8
+    static let LocationContentOffset: CGFloat = 10
     static let TextFieldCornerRadius: CGFloat = 3
     static let TextFieldBorderWidth: CGFloat = 1
     // offset from edge of tabs button
@@ -43,7 +43,7 @@ struct URLBarViewUX {
         theme.textColor = UIColor.white
         theme.backgroundColor = UIConstants.PrivateModeLocationBorderColor
         theme.buttonTintColor = UIConstants.PrivateModeActionButtonTintColor
-        theme.seperatorColor = UIColor(rgb: 0x737373)
+        theme.seperatorColor = UIColor(rgb: 0x3d3d3d)
 
         themes[Theme.PrivateMode] = theme
 
@@ -341,6 +341,7 @@ class URLBarView: UIView {
             self.locationContainer.snp.remakeConstraints { make in
                 make.leading.equalTo(self).offset(URLBarViewUX.LocationLeftPadding)
                 make.trailing.equalTo(self.cancelButton.snp.leading)
+                //make.width.e
                 make.height.equalTo(URLBarViewUX.LocationHeight)
                 make.centerY.equalTo(self)
             }
@@ -836,13 +837,14 @@ class ToolbarTextField: AutocompleteTextField {
         for view in subviews as [UIView] {
 
             if let button = view as? UIButton {
-                if let image = button.image(for: UIControlState()) {
+                if let image = UIImage(named: "clear_textfield") {
                     if tintedClearImage == nil {
-                        tintedClearImage = tintImage(image, color: .clear)
+                        tintedClearImage = image
                     }
 
                     if button.imageView?.image != tintedClearImage {
                         button.setImage(tintedClearImage, for: UIControlState())
+                        button.setImage(tintedClearImage, for: .highlighted)
 
                     }
 

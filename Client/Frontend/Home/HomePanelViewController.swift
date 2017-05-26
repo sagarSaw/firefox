@@ -82,7 +82,7 @@ class HomePanelViewController: UIViewController, UITextFieldDelegate, HomePanelD
     var isPrivateMode: Bool = false {
         didSet {
             if oldValue != isPrivateMode {
-                self.buttonContainerView.backgroundColor = isPrivateMode ? HomePanelViewControllerUX.BackgroundColorPrivateMode : HomePanelViewControllerUX.BackgroundColorNormalMode
+                self.buttonContainerView.backgroundColor =  HomePanelViewControllerUX.BackgroundColorNormalMode
                 self.updateButtonTints()
                 self.updateAppState()
             }
@@ -282,9 +282,9 @@ class HomePanelViewController: UIViewController, UITextFieldDelegate, HomePanelD
     func updateButtonTints() {
         for (index, button) in self.buttons.enumerated() {
             if index == self.selectedPanel?.rawValue {
-                button.tintColor = isPrivateMode ? UIConstants.PrivateModePurple : UIConstants.HighlightBlue
+                button.tintColor = UIConstants.HighlightBlue
             } else {
-                button.tintColor = isPrivateMode ? HomePanelViewControllerUX.ToolbarButtonDeselectedColorPrivateMode : HomePanelViewControllerUX.ToolbarButtonDeselectedColorNormalMode
+                button.tintColor =  HomePanelViewControllerUX.ToolbarButtonDeselectedColorNormalMode
             }
         }
     }
@@ -337,7 +337,7 @@ class HomePanelViewController: UIViewController, UITextFieldDelegate, HomePanelD
             button.addTarget(self, action: #selector(HomePanelViewController.endEditing(_:)), for: UIControlEvents.touchUpInside)
             button.transform = translateDown
             button.titleLabel?.textAlignment = .right
-            button.tintColor = self.isPrivateMode ? UIConstants.PrivateModeActionButtonTintColor : UIConstants.SystemBlueColor
+            button.tintColor =  UIConstants.SystemBlueColor
             self.buttonContainerView.addSubview(button)
             button.snp.makeConstraints { make in
                 make.right.equalTo(self.buttonContainerView).offset(HomePanelViewControllerUX.EditDoneButtonRightPadding)

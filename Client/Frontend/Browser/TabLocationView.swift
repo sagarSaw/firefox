@@ -24,7 +24,7 @@ struct TabLocationViewUX {
     static let BaseURLFontColor = UIColor(rgb: 0x272727)
     static let BaseURLPitch = 0.75
     static let HostPitch = 1.0
-    static let LocationContentInset = 8
+    static let LocationContentInset = 10
 
     static let Themes: [String: Theme] = {
         var themes = [String: Theme]()
@@ -102,7 +102,7 @@ class TabLocationView: UIView {
 
     lazy var placeholder: NSAttributedString = {
         let placeholderText = NSLocalizedString("Search or enter address", comment: "The text shown in the URL bar on about:home")
-        return NSAttributedString(string: placeholderText, attributes: [NSForegroundColorAttributeName: UIColor.gray])
+        return NSAttributedString(string: placeholderText, attributes: [NSForegroundColorAttributeName: UIColor(rgb: 0xb2b2b2)])
     }()
 
     lazy var urlTextField: UITextField = {

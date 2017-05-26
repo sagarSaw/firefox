@@ -76,7 +76,12 @@ open class TabToolbarHelper: NSObject {
 
     var buttonTintColor = UIColor.darkGray {
         didSet {
-            setTintColor(buttonTintColor, forButtons: toolbar.actionButtons)
+            setTintColor(buttonTintColor, with: highlightButtonTintColor, forButtons: toolbar.actionButtons)
+        }
+    }
+    var highlightButtonTintColor = UIColor.darkGray {
+        didSet {
+            setTintColor(buttonTintColor, with: highlightButtonTintColor, forButtons: toolbar.actionButtons)
         }
     }
 
@@ -94,9 +99,9 @@ open class TabToolbarHelper: NSObject {
         }
     }
 
-    fileprivate func setTintColor(_ color: UIColor, forButtons buttons: [UIButton]) {
+    fileprivate func setTintColor(_ color: UIColor, with highlightColor: UIColor, forButtons buttons: [UIButton]) {
         let buttons = buttons as! [ToolbarButton]
-        buttons.forEach { $0.tintColor = color; $0.highlightedTintColor = UIColor(rgb: 0x00A2FE); $0.normalTintColor = color }
+        buttons.forEach { $0.tintColor = color; $0.highlightedTintColor = highlightColor; $0.normalTintColor = color }
     }
 
     init(toolbar: TabToolbarProtocol) {
@@ -145,7 +150,7 @@ open class TabToolbarHelper: NSObject {
         toolbar.menuButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickMenu), for: UIControlEvents.touchUpInside)
         toolbar.menuButton.accessibilityIdentifier = "TabToolbar.menuButton"
 
-        setTintColor(buttonTintColor, forButtons: toolbar.actionButtons)
+        setTintColor(buttonTintColor, with: self.highlightButtonTintColor, forButtons: toolbar.actionButtons)
     }
 
     func SELdidClickBack() {
@@ -227,11 +232,13 @@ class TabToolbar: Toolbar, TabToolbarProtocol {
         var themes = [String: Theme]()
         var theme = Theme()
         theme.buttonTintColor = UIConstants.PrivateModeActionButtonTintColor
+        theme.highlightColor = UIColor(rgb: 0xAC39FF)
         theme.backgroundColor = UIColor(rgb: 0x38383D)
         themes[Theme.PrivateMode] = theme
 
         theme = Theme()
         theme.buttonTintColor = UIColor.darkGray
+        theme.highlightColor = UIColor(rgb: 0x00A2FE)
         theme.backgroundColor = UIColor(rgb: 0xf7fafc)
         themes[Theme.NormalMode] = theme
 
@@ -318,6 +325,13 @@ extension TabToolbar {
             helper?.buttonTintColor = value
         }
     }
+    dynamic var actionButtonHighlightTintColor: UIColor? {
+        get { return helper?.highlightButtonTintColor }
+        set {
+            guard let value = newValue else { return }
+            helper?.highlightButtonTintColor = value
+        }
+    }
 }
 
 extension TabToolbar: Themeable {
@@ -327,6 +341,7 @@ extension TabToolbar: Themeable {
             return
         }
         actionButtonTintColor = theme.buttonTintColor!
+        actionButtonHighlightTintColor = theme.highlightColor!
         self.backgroundColor = theme.backgroundColor
     }
 }

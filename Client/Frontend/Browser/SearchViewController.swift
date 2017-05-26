@@ -41,10 +41,10 @@ private struct SearchViewControllerUX {
     static let SuggestionCellMaxRows = 2
 
     static let PromptColor = UIConstants.PanelBackgroundColor
-    static let PromptFont = UIFont.systemFont(ofSize: 12, weight: UIFontWeightRegular)
+    static let PromptFont = UIFont.systemFont(ofSize: 15, weight: UIFontWeightRegular)
     static let PromptYesFont = UIFont.systemFont(ofSize: 15, weight: UIFontWeightBold)
-    static let PromptNoFont = UIFont.systemFont(ofSize: 15, weight: UIFontWeightRegular)
-    static let PromptInsets = UIEdgeInsets(top: 15, left: 12, bottom: 15, right: 12)
+    static let PromptNoFont = UIFont.systemFont(ofSize: 15, weight: UIFontWeightBold)
+    static let PromptInsets = UIEdgeInsets(top: 15, left: 16, bottom: 15, right: 12)
     static let PromptButtonColor = UIColor(rgb: 0x007aff)
 
     static let IconSize: CGFloat = 23
@@ -234,9 +234,6 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
 
         suggestionPrompt = prompt
 
-        let promptImage = UIImageView()
-        promptImage.image = UIImage(named: SearchViewControllerUX.SearchImage)
-        prompt.addSubview(promptImage)
 
         let promptLabel = UILabel()
         promptLabel.text = PromptMessage
@@ -250,7 +247,8 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         promptYesButton.setTitle(PromptYes, for: UIControlState())
         promptYesButton.setTitleColor(.white, for: UIControlState.normal)
         promptYesButton.titleLabel?.font = SearchViewControllerUX.PromptYesFont
-        promptYesButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
+        promptYesButton.contentHorizontalAlignment = .center
+        //promptYesButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
         // If the prompt message doesn't fit, this prevents it from pushing the buttons
         // off the row and makes it wrap instead.
         promptYesButton.setContentCompressionResistancePriority(1000, for: UILayoutConstraintAxis.horizontal)
@@ -261,7 +259,9 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         promptNoButton.setTitle(PromptNo, for: UIControlState())
         promptNoButton.setTitleColor(.white, for: UIControlState.normal)
         promptNoButton.titleLabel?.font = SearchViewControllerUX.PromptNoFont
-        promptNoButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
+        promptNoButton.alpha = 0.5
+        promptNoButton.contentHorizontalAlignment = .center
+       // promptNoButton.titleEdgeInsets = SearchViewControllerUX.PromptInsets
         // If the prompt message doesn't fit, this prevents it from pushing the buttons
         // off the row and makes it wrap instead.
         promptNoButton.setContentCompressionResistancePriority(1000, for: UILayoutConstraintAxis.horizontal)
@@ -269,15 +269,11 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         prompt.addSubview(promptNoButton)
 
         // otherwise the label (i.e. question) is visited by VoiceOver *after* yes and no buttons
-        prompt.accessibilityElements = [promptImage, promptLabel, promptYesButton, promptNoButton]
+        prompt.accessibilityElements = [promptLabel, promptYesButton, promptNoButton]
 
-        promptImage.snp.makeConstraints { make in
-            make.left.equalTo(prompt).offset(SearchViewControllerUX.PromptInsets.left)
-            make.centerY.equalTo(prompt)
-        }
 
         promptLabel.snp.makeConstraints { make in
-            make.left.equalTo(promptImage.snp.right).offset(SearchViewControllerUX.PromptInsets.left)
+            make.left.equalTo(self.view).offset(SearchViewControllerUX.PromptInsets.left)
             let insets = SearchViewControllerUX.PromptInsets
             make.top.equalTo(prompt).inset(insets.top)
             make.bottom.equalTo(prompt).inset(insets.bottom)
@@ -286,12 +282,16 @@ class SearchViewController: SiteTableViewController, KeyboardHelperDelegate, Loa
         }
 
         promptNoButton.snp.makeConstraints { make in
-            make.right.equalTo(prompt).inset(SearchViewControllerUX.PromptInsets.right)
+            make.right.equalTo(promptYesButton.snp.left)
+            make.width.equalTo(64)
+            make.height.equalTo(48)
             make.centerY.equalTo(prompt)
         }
 
         promptYesButton.snp.makeConstraints { make in
-            make.right.equalTo(promptNoButton.snp.left).inset(SearchViewControllerUX.PromptInsets.right)
+            make.right.equalTo(prompt)
+            make.width.equalTo(64)
+            make.height.equalTo(48)
             make.centerY.equalTo(prompt)
         }
 
