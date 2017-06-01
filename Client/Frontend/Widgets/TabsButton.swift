@@ -85,12 +85,11 @@ class TabsButton: UIControl {
         view.clipsToBounds = false
         view.isUserInteractionEnabled = false
         view.layer.borderColor = self.borderColor.cgColor
-        view.layer.cornerRadius = URLBarViewUX.TextFieldCornerRadius
         view.layer.borderWidth = 2
         return view
     }()
 
-    let line = UIView()
+    let line = UIView() //clean up line code
 
 
     fileprivate lazy var labelBackground: UIView = {
@@ -108,13 +107,14 @@ class TabsButton: UIControl {
         return border
     }()
 
-    fileprivate var buttonInsets: UIEdgeInsets = TabsButtonUX.TitleInsets
+    fileprivate var buttonInsets: UIEdgeInsets = TabsButtonUX.TitleInsets // not used?
     
     // Used to temporarily store the cloned button so we can respond to layout changes during animation
     fileprivate weak var clonedTabsButton: TabsButton?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        // insideButton.addSubviews([labelBackground, borderView, titleLabel])
         insideButton.addSubview(labelBackground)
         insideButton.addSubview(borderView)
         insideButton.addSubview(titleLabel)
@@ -129,24 +129,24 @@ class TabsButton: UIControl {
 
     override func updateConstraints() {
         super.updateConstraints()
-        labelBackground.snp.remakeConstraints { (make) -> Void in
+        labelBackground.snp.remakeConstraints { make in
             make.edges.equalTo(insideButton)
         }
-        borderView.snp.remakeConstraints { (make) -> Void in
+        borderView.snp.remakeConstraints { make in
             make.edges.equalTo(insideButton)
         }
-        titleLabel.snp.remakeConstraints { (make) -> Void in
+        titleLabel.snp.remakeConstraints { make in
             make.edges.equalTo(insideButton)
         }
-        insideButton.snp.remakeConstraints { (make) -> Void in
-            make.size.equalTo(16)
+        insideButton.snp.remakeConstraints { make in
+            make.size.equalTo(16) //needs static vars
             make.centerY.equalTo(self).offset(-2)
             make.centerX.equalTo(self)
         }
 
         line.snp.makeConstraints { make in
-            make.height.equalTo(1)
-            make.trailing.equalTo(insideButton).offset(-1)
+            make.height.equalTo(1) //needs static vars.
+            make.trailing.equalTo(insideButton).offset(-1) //can prolly use one line with edge insets?
             make.leading.equalTo(insideButton).offset(1)
             make.top.equalTo(insideButton.snp.bottom).offset(1)
         }
@@ -301,6 +301,7 @@ extension TabsButton {
     dynamic var insets: UIEdgeInsets {
         get { return buttonInsets }
         set {
+            // only call if newvalue is different
             buttonInsets = newValue
             setNeedsUpdateConstraints()
         }

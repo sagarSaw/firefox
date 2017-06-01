@@ -262,11 +262,15 @@ struct TabTrayState {
     var isPrivate: Bool = false
 }
 
+struct URLBarState {
+    var url: URL?
+}
+
 class TabTrayController: UIViewController {
     let tabManager: TabManager
     let profile: Profile
     weak var delegate: TabTrayDelegate?
-    weak var appStateDelegate: AppStateDelegate?
+    weak var appStateDelegate: AppStateDelegate? //NEVER USED
 
     var collectionView: UICollectionView!
     var draggedCell: TabCell?
@@ -649,7 +653,7 @@ class TabTrayController: UIViewController {
 
     fileprivate func updateAppState() {
         let state = mainStore.updateState(.tabTray(tabTrayState: self.tabTrayState))
-        self.appStateDelegate?.appDidUpdateState(state)
+        self.appStateDelegate?.appDidUpdateState(state) //NEVER WORKS
     }
 
     fileprivate func closeTabsForCurrentTray() {
