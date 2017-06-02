@@ -40,6 +40,7 @@ class BrowserViewController: UIViewController {
     var homePanelController: HomePanelViewController?
     var webViewContainer: UIView!
     var menuViewController: MenuViewController?
+    var chromeVC: ChromeViewController!
     var urlBar: URLBarView!
     var clipboardBarDisplayHandler: ClipboardBarDisplayHandler!
     var readerModeBar: ReaderModeBarView?
@@ -119,6 +120,7 @@ class BrowserViewController: UIViewController {
         self.profile = profile
         self.tabManager = tabManager
         self.readerModeCache = DiskReaderModeCache.sharedInstance
+
         super.init(nibName: nil, bundle: nil)
         didInit()
     }
@@ -214,7 +216,7 @@ class BrowserViewController: UIViewController {
         if showToolbar {
             toolbar = TabToolbar()
             toolbar?.alpha = 0.9
-            toolbar?.tabToolbarDelegate = self
+            toolbar?.tabToolbarDelegate = chromeVC
             footerBackground = toolbar
             footerBackground?.translatesAutoresizingMaskIntoConstraints = false
           //  footerBackground?.backgroundColor = UIColor(rgb: 0xf9f9fa)
@@ -388,38 +390,15 @@ class BrowserViewController: UIViewController {
         log.debug("BVC setting up URL bar…")
         // Setup the URL bar, wrapped in a view to get transparency effect
         urlBar = URLBarView()
+        chromeVC = ChromeViewController(tabManager: tabManager, urlBar: urlBar, profile: profile, delegate: self)
         urlBar.translatesAutoresizingMaskIntoConstraints = false
-        urlBar.delegate = self
-        urlBar.tabToolbarDelegate = self
+        urlBar.delegate = chromeVC
+        urlBar.tabToolbarDelegate = chromeVC
         header = urlBarTopTabsContainer
         urlBarTopTabsContainer.addSubview(urlBar)
         urlBarTopTabsContainer.backgroundColor = .clear
         urlBarTopTabsContainer.addSubview(topTabsContainer)
         view.addSubview(header)
-
-        // UIAccessibilityCustomAction subclass holding an AccessibleAction instance does not work, thus unable to generate AccessibleActions and UIAccessibilityCustomActions "on-demand" and need to make them "persistent" e.g. by being stored in BVC
-        pasteGoAction = AccessibleAction(name: NSLocalizedString("Paste & Go", comment: "Paste the URL into the location bar and visit"), handler: { () -> Bool in
-            if let pasteboardContents = UIPasteboard.general.string {
-                self.urlBar(self.urlBar, didSubmitText: pasteboardContents)
-                return true
-            }
-            return false
-        })
-        pasteAction = AccessibleAction(name: NSLocalizedString("Paste", comment: "Paste the URL into the location bar"), handler: { () -> Bool in
-            if let pasteboardContents = UIPasteboard.general.string {
-                // Enter overlay mode and fire the text entered callback to make the search controller appear.
-                self.urlBar.enterOverlayMode(pasteboardContents, pasted: true)
-                self.urlBar(self.urlBar, didEnterText: pasteboardContents)
-                return true
-            }
-            return false
-        })
-        copyAddressAction = AccessibleAction(name: NSLocalizedString("Copy Address", comment: "Copy the URL from the location bar"), handler: { () -> Bool in
-            if let url = self.urlBar.currentURL {
-                UIPasteboard.general.url = url as URL
-            }
-            return true
-        })
 
         log.debug("BVC setting up search loader…")
         searchLoader = SearchLoader(profile: profile, urlBar: urlBar)
@@ -1458,17 +1437,24 @@ extension BrowserViewController {
     }
 }
 
-extension BrowserViewController: URLBarDelegate {
-
-    func urlBarDidPressReload(_ urlBar: URLBarView) {
-        tabManager.selectedTab?.reload()
+extension BrowserViewController: ChromeDelegate {
+    func showHomePanels(_ show: Bool) {
+        if show {
+            if .blankPage == NewTabAccessors.getNewTabPage(profile.prefs) {
+                UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil)
+            } else {
+                if let toast = clipboardBarDisplayHandler.clipboardToast {
+                    toast.removeFromSuperview()
+                }
+                showHomePanelController(inline: false)
+            }
+        } else {
+            hideSearchController()
+            updateInContentHomePanel(tabManager.selectedTab?.url as URL?)
+        }
     }
 
-    func urlBarDidPressStop(_ urlBar: URLBarView) {
-        tabManager.selectedTab?.stop()
-    }
-
-    func urlBarDidPressTabs(_ urlBar: URLBarView) {
+    func tabTrayButtonPressed() {
         self.webViewContainerToolbar.isHidden = true
         updateFindInPageVisibility(visible: false)
 
@@ -1482,87 +1468,17 @@ extension BrowserViewController: URLBarDelegate {
         self.tabTrayController = tabTrayController
     }
 
-    func urlBarDidPressReaderMode(_ urlBar: URLBarView) {
-        if let tab = tabManager.selectedTab {
-            if let readerMode = tab.getHelper(name: "ReaderMode") as? ReaderMode {
-                switch readerMode.state {
-                case .available:
-                    enableReaderMode()
-                case .active:
-                    disableReaderMode()
-                case .unavailable:
-                    break
-                }
-            }
-        }
+    func readerModeActive(_ active: Bool) {
+        active ? enableReaderMode() : disableReaderMode()
     }
 
-    func urlBarDidLongPressReaderMode(_ urlBar: URLBarView) -> Bool {
-        guard let tab = tabManager.selectedTab,
-               let url = tab.url?.displayURL,
-               let result = profile.readingList?.createRecordWithURL(url.absoluteString, title: tab.title ?? "", addedBy: UIDevice.current.name)
-            else {
-                UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, NSLocalizedString("Could not add page to Reading list", comment: "Accessibility message e.g. spoken by VoiceOver after adding current webpage to the Reading List failed."))
-                return false
-        }
-
-        switch result {
-        case .success:
-            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, NSLocalizedString("Added page to Reading List", comment: "Accessibility message e.g. spoken by VoiceOver after the current page gets added to the Reading List using the Reader View button, e.g. by long-pressing it or by its accessibility custom action."))
-            // TODO: https://bugzilla.mozilla.org/show_bug.cgi?id=1158503 provide some form of 'this has been added' visual feedback?
-        case .failure(let error):
-            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, NSLocalizedString("Could not add page to Reading List. Maybe it's already there?", comment: "Accessibility message e.g. spoken by VoiceOver after the user wanted to add current page to the Reading List and this was not done, likely because it already was in the Reading List, but perhaps also because of real failures."))
-            log.error("readingList.createRecordWithURL(url: \"\(url.absoluteString)\", ...) failed with error: \(error)")
-        }
-        return true
+    func presentModalViewController(_ modalVC: UIViewController) {
+        modalVC.popoverPresentationController?.delegate = self
+        self.present(modalVC, animated: true, completion: nil)
     }
+}
 
-    func locationActionsForURLBar(_ urlBar: URLBarView) -> [AccessibleAction] {
-        if UIPasteboard.general.string != nil {
-            return [pasteGoAction, pasteAction, copyAddressAction]
-        } else {
-            return [copyAddressAction]
-        }
-    }
-
-    func urlBarDisplayTextForURL(_ url: URL?) -> String? {
-        // use the initial value for the URL so we can do proper pattern matching with search URLs
-        var searchURL = self.tabManager.selectedTab?.currentInitialURL
-        if searchURL?.isErrorPageURL ?? true {
-            searchURL = url
-        }
-        return profile.searchEngines.queryForSearchURL(searchURL as URL?) ?? url?.absoluteString
-    }
-
-    func urlBarDidLongPressLocation(_ urlBar: URLBarView) {
-        let longPressAlertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-
-        for action in locationActionsForURLBar(urlBar) {
-            longPressAlertController.addAction(action.alertAction(style: .default))
-        }
-
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: "Label for Cancel button"), style: .cancel, handler: { (alert: UIAlertAction) -> Void in
-        })
-        longPressAlertController.addAction(cancelAction)
-
-        let setupPopover = { [unowned self] in
-            if let popoverPresentationController = longPressAlertController.popoverPresentationController {
-                popoverPresentationController.sourceView = urlBar
-                popoverPresentationController.sourceRect = urlBar.frame
-                popoverPresentationController.permittedArrowDirections = .any
-                popoverPresentationController.delegate = self
-            }
-        }
-
-        setupPopover()
-
-        if longPressAlertController.popoverPresentationController != nil {
-            displayedPopoverController = longPressAlertController
-            updateDisplayedPopoverProperties = setupPopover
-        }
-
-        self.present(longPressAlertController, animated: true, completion: nil)
-    }
+extension BrowserViewController {
 
     func urlBarDidPressScrollToTop(_ urlBar: URLBarView) {
         if let selectedTab = tabManager.selectedTab {
@@ -1573,10 +1489,6 @@ extension BrowserViewController: URLBarDelegate {
         }
     }
 
-    func urlBarLocationAccessibilityActions(_ urlBar: URLBarView) -> [UIAccessibilityCustomAction]? {
-        return locationActionsForURLBar(urlBar).map { $0.accessibilityCustomAction }
-    }
-
     func urlBar(_ urlBar: URLBarView, didEnterText text: String) {
         searchLoader.query = text
 
@@ -1585,53 +1497,6 @@ extension BrowserViewController: URLBarDelegate {
         } else {
             showSearchController()
             searchController!.searchQuery = text
-        }
-    }
-
-    func urlBar(_ urlBar: URLBarView, didSubmitText text: String) {
-        if let fixupURL = URIFixup.getURL(text) {
-            // The user entered a URL, so use it.
-            finishEditingAndSubmit(fixupURL, visitType: VisitType.typed)
-            return
-        }
-
-        // We couldn't build a URL, so check for a matching search keyword.
-        let trimmedText = text.trimmingCharacters(in: CharacterSet.whitespaces)
-        guard let possibleKeywordQuerySeparatorSpace = trimmedText.characters.index(of: " ") else {
-            submitSearchText(text)
-            return
-        }
-
-        let possibleKeyword = trimmedText.substring(to: possibleKeywordQuerySeparatorSpace)
-        let possibleQuery = trimmedText.substring(from: trimmedText.index(after: possibleKeywordQuerySeparatorSpace))
-
-        profile.bookmarks.getURLForKeywordSearch(possibleKeyword).uponQueue(DispatchQueue.main) { result in
-            if var urlString = result.successValue,
-                let escapedQuery = possibleQuery.addingPercentEncoding(withAllowedCharacters:NSCharacterSet.urlQueryAllowed),
-                let range = urlString.range(of: "%s") {
-                urlString.replaceSubrange(range, with: escapedQuery)
-
-                if let url = URL(string: urlString) {
-                    self.finishEditingAndSubmit(url, visitType: VisitType.typed)
-                    return
-                }
-            }
-
-            self.submitSearchText(text)
-        }
-    }
-
-    fileprivate func submitSearchText(_ text: String) {
-        let engine = profile.searchEngines.defaultEngine
-
-        if let searchURL = engine.searchURLForQuery(text) {
-            // We couldn't find a matching search keyword, so do a search query.
-            Telemetry.recordEvent(SearchTelemetry.makeEvent(engine, source: .URLBar))
-            finishEditingAndSubmit(searchURL, visitType: VisitType.typed)
-        } else {
-            // We still don't have a valid URL, so something is broken. Give up.
-            log.error("Error handling URL entry: \"\(text)\".")
-            assertionFailure("Couldn't generate search URL: \(text)")
         }
     }
 
@@ -1652,51 +1517,7 @@ extension BrowserViewController: URLBarDelegate {
     }
 }
 
-extension BrowserViewController: TabToolbarDelegate {
-    func tabToolbarDidPressBack(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        tabManager.selectedTab?.goBack()
-    }
-
-    func tabToolbarDidLongPressBack(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        showBackForwardList()
-    }
-
-    func tabToolbarDidPressReload(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        tabManager.selectedTab?.reload()
-    }
-
-    func tabToolbarDidLongPressReload(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-
-        guard let tab = tabManager.selectedTab, tab.webView?.url != nil && (tab.getHelper(name: ReaderMode.name()) as? ReaderMode)?.state != .active else {
-            return
-        }
-
-        let toggleActionTitle: String
-        if tab.desktopSite {
-            toggleActionTitle = NSLocalizedString("Request Mobile Site", comment: "Action Sheet Button for Requesting the Mobile Site")
-        } else {
-            toggleActionTitle = NSLocalizedString("Request Desktop Site", comment: "Action Sheet Button for Requesting the Desktop Site")
-        }
-
-        let controller = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        controller.addAction(UIAlertAction(title: toggleActionTitle, style: .default, handler: { _ in tab.toggleDesktopSite() }))
-        controller.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment:"Label for Cancel button"), style: .cancel, handler: nil))
-        controller.popoverPresentationController?.sourceView = toolbar ?? urlBar
-        controller.popoverPresentationController?.sourceRect = button.frame
-        present(controller, animated: true, completion: nil)
-    }
-
-    func tabToolbarDidPressStop(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        tabManager.selectedTab?.stop()
-    }
-
-    func tabToolbarDidPressForward(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        tabManager.selectedTab?.goForward()
-    }
-
-    func tabToolbarDidLongPressForward(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-        showBackForwardList()
-    }
+extension BrowserViewController {
 
     func tabToolbarDidPressMenu(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
         // ensure that any keyboards or spinners are dismissed before presenting the menu
@@ -1748,8 +1569,6 @@ extension BrowserViewController: TabToolbarDelegate {
         toggleBookmarkForTabState(tab.tabState)
     }
 
-    func tabToolbarDidLongPressBookmark(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
-    }
 
     func tabToolbarDidPressShare(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
         if let tab = tabManager.selectedTab, let url = tab.url?.displayURL {
@@ -1762,17 +1581,7 @@ extension BrowserViewController: TabToolbarDelegate {
         guard let tab = tabManager.selectedTab else { return }
         HomePageHelper(prefs: profile.prefs).openHomePage(inTab: tab, withNavigationController: navigationController)
     }
-    
-    func showBackForwardList() {
-        if let backForwardList = tabManager.selectedTab?.webView?.backForwardList {
-            let backForwardViewController = BackForwardListViewController(profile: profile, backForwardList: backForwardList, isPrivate: tabManager.selectedTab?.isPrivate ?? false)
-            backForwardViewController.tabManager = tabManager
-            backForwardViewController.bvc = self
-            backForwardViewController.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-            backForwardViewController.backForwardTransitionDelegate = BackForwardListAnimator()
-            self.present(backForwardViewController, animated: true, completion: nil)
-        }
-    }
+
 }
 
 extension BrowserViewController: MenuViewControllerDelegate {
@@ -3454,7 +3263,7 @@ private extension WKNavigationAction {
 extension BrowserViewController: TopTabsDelegate {
     func topTabsDidPressTabs() {
         urlBar.leaveOverlayMode(didCancel: true)
-        self.urlBarDidPressTabs(urlBar)
+      //  self.urlBarDidPressTabs(urlBar)
     }
     
     func topTabsDidPressNewTab(_ isPrivate: Bool) {

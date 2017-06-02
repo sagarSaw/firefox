@@ -10,6 +10,9 @@ import XCGLogger
 
 private let log = Logger.browserLogger
 
+
+
+//static struct. causes long compile times when you change a small thing. Why?
 struct URLBarViewUX {
     //clean up
     static let LocationLeftPadding = 6
@@ -47,6 +50,7 @@ struct URLBarViewUX {
     }
 }
 
+// Used by BrowserVC to show the correct view controllers and set the right browser state
 protocol URLBarDelegate: class {
     func urlBarDidPressTabs(_ urlBar: URLBarView)
     func urlBarDidPressReaderMode(_ urlBar: URLBarView)
@@ -80,11 +84,22 @@ protocol URLBarDelegate: class {
  // enterOverlayMode
  */
 
-class URLBarView: UIView {
-    weak var delegate: URLBarDelegate?
-    weak var tabToolbarDelegate: TabToolbarDelegate?
-    var helper: TabToolbarHelper?
+extension UIView {
 
+    func addSubviews(views: UIView...) {
+        views.forEach { self.addSubview($0) }
+    }
+}
+
+
+
+class URLBarView: UIView {
+    weak var delegate: URLBarDelegate? // A BrowserVC
+    weak var tabToolbarDelegate: TabToolbarDelegate?
+    var helper: TabToolbarHelper? // When the device is rotated. The urlbar includes icons that would normally be in the bottom toolbar
+    // this abstracts the changes out
+
+    // used to reset progress bar and say if we should animate or not
     var isTransitioning: Bool = false {
         didSet {
             if isTransitioning {
@@ -95,7 +110,6 @@ class URLBarView: UIView {
         }
     }
 
-    fileprivate var currentTheme: String = Theme.NormalMode
 
     var toolbarIsShowing = false
     var topTabsIsShowing = false
@@ -108,6 +122,8 @@ class URLBarView: UIView {
     /// a panel, the first responder will be resigned, yet the overlay mode UI is still active.
     var inOverlayMode = false
 
+
+    //V I E W S
     lazy var locationView: TabLocationView = {
         let locationView = TabLocationView()
         locationView.translatesAutoresizingMaskIntoConstraints = false
@@ -127,7 +143,7 @@ class URLBarView: UIView {
 
     fileprivate lazy var tabsButton: TabsButton = {
         let tabsButton = TabsButton.tabTrayButton()
-        tabsButton.addTarget(self, action: #selector(URLBarView.SELdidClickAddTab), for: UIControlEvents.touchUpInside)
+        tabsButton.addTarget(self, action: #selector(URLBarView.SELdidClickAddTab), for: .touchUpInside)
         tabsButton.accessibilityIdentifier = "URLBarView.tabsButton"
 
         return tabsButton
@@ -139,7 +155,6 @@ class URLBarView: UIView {
         progressBar.backgroundColor = .clear
         progressBar.trackTintColor = .clear
         progressBar.alpha = 0
-        progressBar.layer.cornerRadius = 3
         progressBar.layer.cornerRadius = 1
         progressBar.isHidden = true
         return progressBar
@@ -151,10 +166,10 @@ class URLBarView: UIView {
         let cancelTitle = NSLocalizedString("Cancel", comment: "Label for Cancel button")
         cancelButton.setTitle(cancelTitle, for: UIControlState())
         cancelButton.titleLabel?.font = UIConstants.DefaultChromeFont
-        cancelButton.addTarget(self, action: #selector(URLBarView.SELdidClickCancel), for: UIControlEvents.touchUpInside)
+        cancelButton.addTarget(self, action: #selector(URLBarView.SELdidClickCancel), for: .touchUpInside)
         cancelButton.titleEdgeInsets = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 14)
-        cancelButton.setContentHuggingPriority(1000, for: UILayoutConstraintAxis.horizontal)
-        cancelButton.setContentCompressionResistancePriority(1000, for: UILayoutConstraintAxis.horizontal)
+        cancelButton.setContentHuggingPriority(1000, for: .horizontal)
+        cancelButton.setContentCompressionResistancePriority(1000, for: .horizontal)
         cancelButton.alpha = 0
         return cancelButton
     }()
@@ -162,17 +177,17 @@ class URLBarView: UIView {
 
     fileprivate lazy var scrollToTopButton: UIButton = {
         let button = UIButton()
-        button.addTarget(self, action: #selector(URLBarView.SELtappedScrollToTopArea), for: UIControlEvents.touchUpInside)
+        button.addTarget(self, action: #selector(URLBarView.SELtappedScrollToTopArea), for: .touchUpInside)
         return button
     }()
 
     var shareButton: UIButton = ToolbarButton()
-
     var menuButton: UIButton = ToolbarButton()
-
     var bookmarkButton: UIButton = ToolbarButton()
-
     var forwardButton: UIButton = ToolbarButton()
+    var stopReloadButton: UIButton = ToolbarButton()
+
+    var homePageButton: UIButton = ToolbarButton()
 
     var backButton: UIButton = {
         let backButton = ToolbarButton()
@@ -180,9 +195,7 @@ class URLBarView: UIView {
         return backButton
     }()
 
-    var stopReloadButton: UIButton = ToolbarButton()
 
-    var homePageButton: UIButton = ToolbarButton()
 
     lazy var actionButtons: [UIButton] = [self.shareButton, self.menuButton, self.forwardButton, self.backButton, self.stopReloadButton, self.homePageButton]
 
@@ -210,18 +223,8 @@ class URLBarView: UIView {
 
     fileprivate func commonInit() {
         backgroundColor = UIColor(rgb: 0xF7FAFC)
-       // addSubview(curveShape)
-        addSubview(scrollToTopButton)
-
-        addSubview(tabsButton)
-        addSubview(cancelButton)
-
-        addSubview(shareButton)
-        addSubview(menuButton)
-        addSubview(homePageButton)
-        addSubview(forwardButton)
-        addSubview(backButton)
-        addSubview(stopReloadButton)
+        self.addSubviews(views: scrollToTopButton, tabsButton, cancelButton, shareButton, menuButton)
+        self.addSubviews(views: homePageButton, forwardButton, backButton, stopReloadButton)
 
         locationContainer.addSubview(locationView)
         addSubview(locationContainer)
@@ -231,10 +234,7 @@ class URLBarView: UIView {
         addSubview(line)
         addSubview(progressBar)
 
-        line.snp.makeConstraints { make in
-            make.bottom.leading.trailing.equalTo(self)
-            make.height.equalTo(1)
-        }
+
 
         helper = TabToolbarHelper(toolbar: self)
         setupConstraints()
@@ -244,7 +244,12 @@ class URLBarView: UIView {
         updateViewsForOverlayModeAndToolbarChanges()
     }
 
-    fileprivate func setupConstraints() {
+    private func setupConstraints() {
+        line.snp.makeConstraints { make in
+            make.bottom.leading.trailing.equalTo(self)
+            make.height.equalTo(1)
+        }
+
         scrollToTopButton.snp.makeConstraints { make in
             make.top.equalTo(self)
             make.left.right.equalTo(self.locationContainer)
@@ -270,7 +275,6 @@ class URLBarView: UIView {
             make.trailing.equalTo(self)
             make.size.equalTo(UIConstants.URLBarHeight)
         }
-
 
         backButton.snp.makeConstraints { make in
             make.left.centerY.equalTo(self)
@@ -376,7 +380,6 @@ class URLBarView: UIView {
             make.edges.equalTo(self.locationView.urlTextField)
         }
 
-      //  locationTextField.applyTheme(currentTheme)
     }
 
     func removeLocationTextField() {
@@ -687,16 +690,15 @@ extension URLBarView: Themeable {
         }
         backgroundColor = theme.backgroundColor
         locationTextField?.backgroundColor = backgroundColor
-        currentTheme = themeName
         progressBarTint = theme.tintColor
         cancelTextColor = theme.textColor
         actionButtonTintColor = theme.buttonTintColor
         seperatorColor = theme.seperatorColor
-        //tabsButton
-        //line #737373
+
         if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             appDelegate.window?.backgroundColor = theme.backgroundColor
         }
+
         tabsButton.applyTheme(themeName)
     }
 }
