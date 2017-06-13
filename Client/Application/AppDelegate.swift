@@ -359,55 +359,71 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
             return false
         }
 
-        if AppConstants.MOZ_FXA_DEEP_LINK_FORM_FILL {
-            // Extract optional FxA deep-linking options
-            let query = url.getQuery()
-            let host = url.host
-            
-            // FxA form filling requires a `signin` query param and host = fxa-signin
-            // Ex. firefox://fxa-signin?signin=<token>&someQuery=<data>...
-            if query["signin"] != nil && host == "fxa-signin" {
-                let fxaParams: FxALaunchParams
-                fxaParams = FxALaunchParams(query: query)
-                launchFxAFromURL(fxaParams)
-                return true
+        guard let host = url.host else {
+            log.warning("Cannot handle nil URL host")
+            return false
+        }
+
+        switch host {
+        case "open-url":
+            var url: String?
+            var isPrivate: Bool = false
+            for item in (components.queryItems ?? []) as [URLQueryItem] {
+                switch item.name {
+                case "url":
+                    url = item.value
+                case "private":
+                    isPrivate = NSString(string: item.value ?? "false").boolValue
+                default: ()
+                }
             }
-        }
 
-        var url: String?
-        var isPrivate: Bool = false
-        
-        for item in (components.queryItems ?? []) as [URLQueryItem] {
-            switch item.name {
-            case "url":
-                url = item.value
-            case "private":
-                isPrivate = NSString(string: item.value ?? "false").boolValue
-            case "deep-link":
-                guard let value = item.value else { break }
-                Router.shared.routeURL(value)
-                return true
-            default: ()
+            let params: LaunchParams
+
+            if let url = url, let newURL = URL(string: url) {
+                params = LaunchParams(url: newURL, isPrivate: isPrivate)
+            } else {
+                params = LaunchParams(url: nil, isPrivate: isPrivate)
             }
-        }
-        
-        let params: LaunchParams
 
-        if let url = url, let newURL = URL(string: url) {
-            params = LaunchParams(url: newURL, isPrivate: isPrivate)
-        } else {
-            params = LaunchParams(url: nil, isPrivate: isPrivate)
-        }
+            if application.applicationState == .active {
+                // If we are active then we can ask the BVC to open the new tab right away.
+                // Otherwise, we remember the URL and we open it in applicationDidBecomeActive.
+                launchFromURL(params)
+            } else {
+                openInFirefoxParams = params
+            }
 
-        if application.applicationState == .active {
-            // If we are active then we can ask the BVC to open the new tab right away. 
-            // Otherwise, we remember the URL and we open it in applicationDidBecomeActive.
-            launchFromURL(params)
-        } else {
-            openInFirefoxParams = params
-        }
+            return true
+        case "deep-link":
+            for item in (components.queryItems ?? []) as [URLQueryItem] {
+                switch item.name {
+                case "deep-link":
+                    guard let value = item.value else { break }
+                    Router.shared.routeURL(value)
+                    return true
+                default: ()
+                }
+            }
+            break
+        case "fxa-signin":
+            if AppConstants.MOZ_FXA_DEEP_LINK_FORM_FILL {
+                // Extract optional FxA deep-linking options
+                let query = url.getQuery()
 
-        return true
+                // FxA form filling requires a `signin` query param and host = fxa-signin
+                // Ex. firefox://fxa-signin?signin=<token>&someQuery=<data>...
+                if query["signin"] != nil {
+                    let fxaParams: FxALaunchParams
+                    fxaParams = FxALaunchParams(query: query)
+                    launchFxAFromURL(fxaParams)
+                    return true
+                }
+            }
+            break
+        default: ()
+        }
+        return false
     }
     
     func launchFxAFromURL(_ params: FxALaunchParams) {
