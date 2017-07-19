@@ -81,7 +81,6 @@ class BrowserViewController: UIViewController {
     fileprivate var copyAddressAction: AccessibleAction!
 
     fileprivate weak var tabTrayController: TabTrayController!
-
     let profile: Profile
     let tabManager: TabManager
 
@@ -1421,10 +1420,10 @@ extension BrowserViewController: MenuActionDelegate {
                 openHomePanel(.readingList, forAppState: appState)
             case .setHomePage:
                 guard let tab = tabManager.selectedTab else { break }
-                HomePageHelper(prefs: profile.prefs).setHomePage(toTab: tab, withNavigationController: navigationController)
+                HomePageHelper(prefs: profile.prefs).setHomePage(toTab: tab, presentAlertOn: navigationController)
             case .openHomePage:
                 guard let tab = tabManager.selectedTab else { break }
-                HomePageHelper(prefs: profile.prefs).openHomePage(inTab: tab, withNavigationController: navigationController)
+                HomePageHelper(prefs: profile.prefs).openHomePage(inTab: tab, presentAlertOn: navigationController)
             case .sharePage:
                 guard let url = tabManager.selectedTab?.url else { break }
                 let sourceView = self.navigationToolbar.menuButton
@@ -1699,7 +1698,8 @@ extension BrowserViewController: URLBarDelegate {
     }
 }
 
-extension BrowserViewController: TabToolbarDelegate {
+extension BrowserViewController: TabToolbarDelegate, PhotonActionSheetProtocol {
+
     func tabToolbarDidPressBack(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
         tabManager.selectedTab?.goBack()
     }
@@ -1748,6 +1748,36 @@ extension BrowserViewController: TabToolbarDelegate {
     func tabToolbarDidPressMenu(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
         // ensure that any keyboards or spinners are dismissed before presenting the menu
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to:nil, from:nil, for:nil)
+
+        if FeatureSwitches.photonMenu.isMember(profile.prefs) {
+            var actions: [[PhotonActionSheetItem]] = []
+
+            let tabActions = self.getTabMenuActions(openURL: { (url, isPrivate) in
+                self.openURLInNewTab(url, isPrivate: isPrivate, isPrivileged: true)
+            })
+            actions.append(tabActions)
+
+            let actionMenuPresenter: (URL, Tab, UIView, UIPopoverArrowDirection) -> ()  = { (url, tab, view, direction) in
+                self.presentActivityViewController(url, tab: tab, sourceView: view, sourceRect: view.frame, arrowDirection: .up)
+            }
+
+            // The logic of which actions appear when isnt final.
+            if let tab = self.tabManager.selectedTab, let url = tab.url, !url.isLocal {
+                let pageActions = self.getTabActions(tab: tab, buttonView: button, presentShareMenu: actionMenuPresenter)
+                actions.append(pageActions)
+            } else {
+                let systemActions = self.getOtherPanelActions(vcDelegate: self)
+                actions.append(systemActions)
+            }
+
+
+            self.presentSheetWith(actions: actions, on: self, from: button)
+
+
+            return
+        }
+
+
         // check the trait collection
         // open as modal if portrait\
         let presentationStyle: MenuViewPresentationStyle = (self.traitCollection.horizontalSizeClass == .compact && traitCollection.verticalSizeClass == .regular) ? .modal : .popover
@@ -1808,7 +1838,7 @@ extension BrowserViewController: TabToolbarDelegate {
 
     func tabToolbarDidPressHomePage(_ tabToolbar: TabToolbarProtocol, button: UIButton) {
         guard let tab = tabManager.selectedTab else { return }
-        HomePageHelper(prefs: profile.prefs).openHomePage(inTab: tab, withNavigationController: navigationController)
+        HomePageHelper(prefs: profile.prefs).openHomePage(inTab: tab, presentAlertOn: navigationController)
     }
     
     func showBackForwardList() {
