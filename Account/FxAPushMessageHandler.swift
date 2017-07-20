@@ -28,7 +28,7 @@ extension FxAPushMessageHandler {
     /// Accepts the raw Push message from Autopush. 
     /// This method then decrypts it according to the content-encoding (aes128gcm or aesgcm)
     /// and then effects changes on the logged in account.
-    @discardableResult func handle(userInfo: [AnyHashable: Any]) -> Success {
+    @discardableResult func handle(userInfo: [AnyHashable: Any]) -> PushMessageResult {
         guard let subscription = profile.getAccount()?.pushRegistration?.defaultSubscription else {
             return deferMaybe(PushMessageError.notDecrypted)
         }
@@ -58,7 +58,7 @@ extension FxAPushMessageHandler {
     }
 
     /// The main entry point to the handler for decrypted messages.
-    func handle(message json: JSON) -> Success {
+    func handle(message json: JSON) -> PushMessageResult {
         if !json.isDictionary() || json.isEmpty {
             return handleVerification()
         }
@@ -69,7 +69,7 @@ extension FxAPushMessageHandler {
             return deferMaybe(PushMessageError.messageIncomplete)
         }
 
-        let result: Success
+        let result: PushMessageResult
         switch command {
             case .deviceConnected:
                 result = handleDeviceConnected(json["data"])
@@ -91,10 +91,10 @@ extension FxAPushMessageHandler {
 }
 
 extension FxAPushMessageHandler {
-    func handleVerification() -> Success {
+    func handleVerification() -> PushMessageResult {
         guard let account = profile.getAccount(), account.actionNeeded == .needsVerification else {
             log.info("Account verified by server either doesn't exist or doesn't need verifying")
-            return succeed()
+            return deferMaybe(.accountVerified)
         }
 
         // Progress through the FxAStateMachine, then explicitly sync.
@@ -108,7 +108,7 @@ extension FxAPushMessageHandler {
 
 /// An extension to handle each of the messages.
 extension FxAPushMessageHandler {
-    func handleDeviceConnected(_ data: JSON?) -> Success {
+    func handleDeviceConnected(_ data: JSON?) -> PushMessageResult {
         guard let deviceName = data?["deviceName"].string else {
             return messageIncomplete(.deviceConnected)
         }
@@ -117,7 +117,7 @@ extension FxAPushMessageHandler {
 }
 
 extension FxAPushMessageHandler {
-    func handleDeviceDisconnected(_ data: JSON?) -> Success {
+    func handleDeviceDisconnected(_ data: JSON?) -> PushMessageResult {
         guard let deviceID = data?["id"].string else {
             return messageIncomplete(.deviceDisconnected)
         }
@@ -126,25 +126,25 @@ extension FxAPushMessageHandler {
 }
 
 extension FxAPushMessageHandler {
-    func handleProfileUpdated() -> Success {
+    func handleProfileUpdated() -> PushMessageResult {
         return unimplemented(.profileUpdated)
     }
 }
 
 extension FxAPushMessageHandler {
-    func handlePasswordChanged() -> Success {
+    func handlePasswordChanged() -> PushMessageResult {
         return unimplemented(.passwordChanged)
     }
 }
 
 extension FxAPushMessageHandler {
-    func handlePasswordReset() -> Success {
+    func handlePasswordReset() -> PushMessageResult {
         return unimplemented(.passwordReset)
     }
 }
 
 extension FxAPushMessageHandler {
-    func handleCollectionChanged(_ data: JSON?) -> Success {
+    func handleCollectionChanged(_ data: JSON?) -> PushMessageResult {
         guard let collections = data?["collections"].arrayObject as? [String] else {
             log.warning("collections_changed received but incomplete: \(data ?? "nil")")
             return deferMaybe(PushMessageError.messageIncomplete)
@@ -152,13 +152,13 @@ extension FxAPushMessageHandler {
         // Possible values: "addons", "bookmarks", "history", "forms", "prefs", "tabs", "passwords", "clients"
 
         // syncManager will only do a subset; others will be ignored.
-        return profile.syncManager.syncNamedCollections(why: .push, names: collections)
+        return profile.syncManager.syncNamedCollections(why: .push, names: collections) >>== { deferMaybe(.collectionChanged(collections: collections)) }
     }
 }
 
 /// Some utility methods
 fileprivate extension FxAPushMessageHandler {
-    func unimplemented(_ messageType: PushMessageType, with param: String? = nil) -> Success {
+    func unimplemented(_ messageType: PushMessageType, with param: String? = nil) -> PushMessageResult {
         if let param = param {
             log.warning("\(messageType) message received with parameter = \(param), but unimplemented")
         } else {
@@ -167,7 +167,7 @@ fileprivate extension FxAPushMessageHandler {
         return deferMaybe(PushMessageError.unimplemented(messageType))
     }
 
-    func messageIncomplete(_ messageType: PushMessageType) -> Success {
+    func messageIncomplete(_ messageType: PushMessageType) -> PushMessageResult {
         log.info("\(messageType) message received, but incomplete")
         return deferMaybe(PushMessageError.messageIncomplete)
     }
@@ -185,16 +185,32 @@ enum PushMessageType: String {
     case accountVerified = "account_verified"
 }
 
+enum PushMessage {
+    case deviceConnected(String)
+    case deviceDisconnected(String?)
+    case profileUpdated
+    case passwordChanged
+    case passwordReset
+    case collectionChanged(collections: [String])
+    case accountVerified
+}
+
+typealias PushMessageResult = Deferred<Maybe<PushMessage>>
+
 enum PushMessageError: MaybeErrorType {
     case notDecrypted
     case messageIncomplete
     case unimplemented(PushMessageType)
+    case timeout
+    case accountError
 
     public var description: String {
         switch self {
         case .notDecrypted: return "notDecrypted"
         case .messageIncomplete: return "messageIncomplete"
         case .unimplemented(let what): return "unimplemented=\(what)"
+        case .timeout: return "timeout"
+        case .accountError: return "accountError"
         }
     }
 }
