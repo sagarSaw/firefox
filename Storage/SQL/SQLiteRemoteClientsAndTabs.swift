@@ -143,8 +143,40 @@ open class SQLiteRemoteClientsAndTabs: RemoteClientsAndTabs {
         return insertOrUpdateClients([client])
     }
 
+    open func deleteClientWithId(_ clientID: GUID) -> Success {
+        let deferred = Success(defaultQueue: DispatchQueue.main)
 
+        let deleteTabsQuery = "DELETE FROM \(self.tabs.name) WHERE client_guid IS ?"
+        let deleteClientQuery = "DELETE FROM \(self.clients.name) WHERE guid IS ?"
+        let deleteArgs: Args = [clientID]
 
+        var err: NSError?
+
+        _ = db.transaction(&err) { connection, _ in
+            var success = true
+            if let _ = connection.executeChange(deleteClientQuery, withArgs: deleteArgs) {
+                log.warning("Deleting client failed.")
+                success = false
+            }
+
+            // Delete any existing tabs.
+            if let _ = connection.executeChange(deleteTabsQuery, withArgs: deleteArgs) {
+                log.warning("Deleting client tabs failed.")
+
+                success = false
+            }
+
+            if success {
+                deferred.fill(Maybe(success: ()))
+            } else {
+                deferred.fill(Maybe(failure: DatabaseError(err: err)))
+            }
+            return success
+        }
+        
+        return deferred
+
+    }
 
     open func getClientWithId(_ clientID: GUID) -> Deferred<Maybe<RemoteClient?>> {
         return self.db.runQuery("SELECT * FROM \(TableClients) WHERE guid = ?", args: [clientID], factory: clients.factory!) >>== { deferMaybe($0[0]) }
