@@ -121,7 +121,22 @@ extension FxAPushMessageHandler {
         guard let deviceID = data?["id"].string else {
             return messageIncomplete(.deviceDisconnected)
         }
-        return unimplemented(.deviceDisconnected, with: deviceID)
+
+        guard let profile = self.profile as? BrowserProfile else {
+            return deferMaybe(PushMessageError.accountError)
+        }
+
+        let clients = profile.remoteClientsAndTabs
+        let getClientById = clients.getClientWithId(deviceID)
+        
+        return getClientById >>== { device in
+            let message = PushMessage.deviceDisconnected(device?.name)
+            if let _ = device {
+                return clients.deleteClientWithId(deviceID) >>== { _ in deferMaybe(message) }
+            }
+
+            return self.syncClients() >>== { deferMaybe(message) }
+        }
     }
 }
 
@@ -170,6 +185,13 @@ fileprivate extension FxAPushMessageHandler {
     func messageIncomplete(_ messageType: PushMessageType) -> PushMessageResult {
         log.info("\(messageType) message received, but incomplete")
         return deferMaybe(PushMessageError.messageIncomplete)
+    }
+
+    func syncClients() -> Success {
+        guard let sm = profile.syncManager else {
+            return deferMaybe(PushMessageError.accountError)
+        }
+        return sm.syncNamedCollections(why: .push, names: ["clients"])
     }
 }
 
