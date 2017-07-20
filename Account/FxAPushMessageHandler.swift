@@ -112,7 +112,8 @@ extension FxAPushMessageHandler {
         guard let deviceName = data?["deviceName"].string else {
             return messageIncomplete(.deviceConnected)
         }
-        return unimplemented(.deviceConnected, with: deviceName)
+        let message = PushMessage.deviceConnected(deviceName)
+        return self.syncClients() >>== { deferMaybe(message) }
     }
 }
 

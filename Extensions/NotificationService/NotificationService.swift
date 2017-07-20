@@ -85,6 +85,10 @@ class SyncDataDisplay {
         }
 
         switch message {
+        case .deviceConnected(let deviceName):
+            presentNotification(title: Strings.FxAPush_DeviceConnected_title,
+                                body: Strings.FxAPush_DeviceConnected_body,
+                                bodyArg: deviceName)
         case .deviceDisconnected(let deviceName):
             if let deviceName = deviceName {
                 presentNotification(title: Strings.FxAPush_DeviceDisconnected_title,
