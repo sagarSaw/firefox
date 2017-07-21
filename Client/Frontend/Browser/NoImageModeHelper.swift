@@ -7,7 +7,6 @@ import WebKit
 import Shared
 
 struct NoImageModePrefsKey {
-    static let NoImageModeButtonIsInMenu = PrefsKeys.KeyNoImageModeButtonIsInMenu
     static let NoImageModeStatus = PrefsKeys.KeyNoImageModeStatus
 }
 
@@ -34,10 +33,8 @@ class NoImageModeHelper: TabHelper {
         // Do nothing.
     }
 
-    static func isNoImageModeAvailable(_ state: AppState) -> Bool {
-        // TODO: Doesnt look like anyone actually uses NoImageModePrefsKey.NoImageModeButtonIsInMenu
-        // was this added in the case that this feature might only launch in China?
-        return state.prefs.boolForKey(NoImageModePrefsKey.NoImageModeButtonIsInMenu) ?? AppConstants.MOZ_NO_IMAGE_MODE
+    static func isNoImageModeAvailable() -> Bool {
+        return AppConstants.MOZ_NO_IMAGE_MODE
     }
 
     static func isNoImageModeActivated(_ state: AppState) -> Bool {

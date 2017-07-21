@@ -125,7 +125,7 @@ struct AppMenuConfiguration: MenuConfiguration {
                 bookmarkMenuItem.isDisabled = true
             }
             menuItems.append(bookmarkMenuItem)
-            if NoImageModeHelper.isNoImageModeAvailable(appState) {
+            if NoImageModeHelper.isNoImageModeAvailable() {
                 if NoImageModeHelper.isNoImageModeActivated(appState) {
                     menuItems.append(AppMenuConfiguration.ShowImageModeMenuItem)
                 } else {
