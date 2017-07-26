@@ -112,7 +112,7 @@ open class TabToolbarHelper: NSObject {
         toolbar.homePageButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickHomePage), for: UIControlEvents.touchUpInside)
 
         toolbar.menuButton.contentMode = UIViewContentMode.center
-        toolbar.menuButton.setImage(UIImage.templateImageNamed("find_previous"), for: .normal)
+        toolbar.menuButton.setImage(UIImage.templateImageNamed("nav-menu"), for: .normal)
         toolbar.menuButton.accessibilityLabel = Strings.AppMenuButtonAccessibilityLabel
         toolbar.menuButton.addTarget(self, action: #selector(TabToolbarHelper.SELdidClickMenu), for: UIControlEvents.touchUpInside)
         toolbar.menuButton.accessibilityIdentifier = "TabToolbar.menuButton"
