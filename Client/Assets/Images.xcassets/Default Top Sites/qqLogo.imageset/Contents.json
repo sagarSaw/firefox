@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "bottomNav-HomeEngaged.png",
+      "filename" : "qqLogo.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "bottomNav-HomeEngaged@2x.png",
+      "filename" : "qqLogo@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "bottomNav-HomeEngaged@3x.png",
+      "filename" : "qqLogo@3x.png",
       "scale" : "3x"
     }
   ],
