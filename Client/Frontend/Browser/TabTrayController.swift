@@ -124,7 +124,7 @@ class TabCell: UICollectionViewCell {
         self.titleText.font = DynamicFontHelper.defaultHelper.DefaultSmallFontBold
 
         self.closeButton = UIButton()
-        self.closeButton.setImage(UIImage(named: "stop"), for: UIControlState())
+        self.closeButton.setImage(UIImage(named: "nav-stop"), for: UIControlState())
         self.closeButton.tintColor = UIColor.lightGray
         self.closeButton.imageEdgeInsets = UIEdgeInsets(equalInset: TabTrayControllerUX.CloseButtonEdgeInset)
 
@@ -1213,7 +1213,7 @@ class TrayToolbar: UIView {
 
     lazy var menuButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage.templateImageNamed("bottomNav-menu-pbm"), for: .normal)
+        button.setImage(UIImage.templateImageNamed("find_previous"), for: .normal)
         button.accessibilityLabel = Strings.AppMenuButtonAccessibilityLabel
         button.accessibilityIdentifier = "TabTrayController.menuButton"
         return button

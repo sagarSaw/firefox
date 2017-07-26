@@ -71,7 +71,7 @@ struct AppMenuConfiguration: MenuConfiguration {
     }
 
     func menuIcon() -> UIImage? {
-        return isPrivateMode ? UIImage(named:"bottomNav-menu-pbm") : UIImage(named:"bottomNav-menu")
+        return isPrivateMode ? UIImage(named:"find_next") : UIImage(named:"find_next")
     }
 
     func minMenuRowHeight() -> CGFloat {
