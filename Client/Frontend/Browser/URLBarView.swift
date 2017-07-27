@@ -19,13 +19,6 @@ struct URLBarViewUX {
     static let TextFieldCornerRadius: CGFloat = 3
     static let TextFieldBorderWidth: CGFloat = 1
     // offset from edge of tabs button
-    static let URLBarCurveOffset: CGFloat = 14
-    static let URLBarCurveOffsetLeft: CGFloat = -10
-    // A larger offset is needed when viewing URL bar in overlay mode to get the corners right
-    static let URLBarCurveOverlayOffset: CGFloat = 8
-    static let URLBarMinimumOffsetToAnimate: CGFloat = 30
-    // buffer so we dont see edges when animation overshoots with spring
-    static let URLBarCurveBounceBuffer: CGFloat = 8
     static let ProgressTintColor = UIColor(red:1, green:0.32, blue:0, alpha:1)
 
     static let TabsButtonRotationOffset: CGFloat = 1.5
@@ -110,11 +103,7 @@ class URLBarView: UIView {
     fileprivate var currentTheme: String = Theme.NormalMode
 
     var toolbarIsShowing = false
-    var topTabsIsShowing = false {
-        didSet {
-            curveShape.isHidden = topTabsIsShowing
-        }
-    }
+    var topTabsIsShowing = false
 
     fileprivate var locationTextField: ToolbarTextField?
 
@@ -175,7 +164,6 @@ class URLBarView: UIView {
         return cancelButton
     }()
 
-    fileprivate lazy var curveShape: CurveView = { return CurveView() }()
 
     fileprivate lazy var scrollToTopButton: UIButton = {
         let button = UIButton()
@@ -199,7 +187,7 @@ class URLBarView: UIView {
     lazy var actionButtons: [UIButton] = [self.shareButton, self.menuButton, self.forwardButton, self.backButton, self.stopReloadButton, self.homePageButton]
 
     fileprivate var rightBarConstraint: Constraint?
-    fileprivate let defaultRightOffset: CGFloat = URLBarViewUX.URLBarCurveOffset - URLBarViewUX.URLBarCurveBounceBuffer
+    fileprivate let defaultRightOffset: CGFloat = 0
 
     var currentURL: URL? {
         get {
@@ -223,7 +211,6 @@ class URLBarView: UIView {
 
     fileprivate func commonInit() {
         backgroundColor = URLBarViewUX.backgroundColorWithAlpha(0)
-        addSubview(curveShape)
         addSubview(scrollToTopButton)
 
         addSubview(progressBar)
@@ -273,12 +260,6 @@ class URLBarView: UIView {
             make.size.equalTo(UIConstants.ToolbarHeight)
         }
 
-        curveShape.snp.makeConstraints { make in
-            make.top.left.bottom.equalTo(self)
-            self.rightBarConstraint = make.right.equalTo(self).constraint
-            self.rightBarConstraint?.update(offset: defaultRightOffset)
-        }
-
         backButton.snp.makeConstraints { make in
             make.left.centerY.equalTo(self)
             make.size.equalTo(UIConstants.ToolbarHeight)
@@ -308,7 +289,7 @@ class URLBarView: UIView {
         }
 
         menuButton.snp.makeConstraints { make in
-            make.right.equalTo(self.tabsButton.snp.left).offset(URLBarViewUX.URLBarCurveOffsetLeft)
+            make.right.equalTo(self.tabsButton.snp.left).offset(0)
             make.centerY.equalTo(self)
             make.size.equalTo(backButton)
         }
@@ -500,9 +481,9 @@ class URLBarView: UIView {
 
         if inOverlayMode {
             self.cancelButton.transform = CGAffineTransform.identity
-            let tabsButtonTransform = CGAffineTransform(translationX: self.tabsButton.frame.width + URLBarViewUX.URLBarCurveOffset, y: 0)
+            let tabsButtonTransform = CGAffineTransform(translationX: self.tabsButton.frame.width, y: 0)
             self.tabsButton.transform = tabsButtonTransform
-            self.rightBarConstraint?.update(offset: URLBarViewUX.URLBarCurveOffset + URLBarViewUX.URLBarCurveBounceBuffer + tabsButton.frame.width)
+            self.rightBarConstraint?.update(offset: 0 + tabsButton.frame.width)
 
             // Make the editable text field span the entire URL bar, covering the lock and reader icons.
             self.locationTextField?.snp.remakeConstraints { make in
@@ -732,89 +713,6 @@ extension URLBarView: AppStateDelegate {
             homePageButton.isHidden = true
             shareButton.isHidden = true
         }
-    }
-}
-
-/* Code for drawing the urlbar curve */
-// Curve's aspect ratio
-private let ASPECT_RATIO = 0.729
-
-// Width multipliers
-private let W_M1 = 0.343
-private let W_M2 = 0.514
-private let W_M3 = 0.49
-private let W_M4 = 0.545
-private let W_M5 = 0.723
-
-// Height multipliers
-private let H_M1 = 0.25
-private let H_M2 = 0.5
-private let H_M3 = 0.72
-private let H_M4 = 0.961
-
-/* Code for drawing the urlbar curve */
-private class CurveView: UIView {
-    fileprivate lazy var leftCurvePath: UIBezierPath = {
-        var leftArc = UIBezierPath(arcCenter: CGPoint(x: 5, y: 5), radius: CGFloat(5), startAngle: CGFloat(-Double.pi), endAngle: CGFloat(-(Double.pi / 2)), clockwise: true)
-        leftArc.addLine(to: CGPoint(x: 0, y: 0))
-        leftArc.addLine(to: CGPoint(x: 0, y: 5))
-        leftArc.close()
-        return leftArc
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        commonInit()
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        commonInit()
-    }
-
-    fileprivate func commonInit() {
-        self.isOpaque = false
-        self.contentMode = .redraw
-    }
-
-    fileprivate func getWidthForHeight(_ height: Double) -> Double {
-        return height * ASPECT_RATIO
-    }
-
-    fileprivate func drawFromTop(_ path: UIBezierPath) {
-        let height: Double = Double(UIConstants.ToolbarHeight)
-        let width = getWidthForHeight(height)
-        let from = (Double(self.frame.width) - width * 2 - Double(URLBarViewUX.URLBarCurveOffset - URLBarViewUX.URLBarCurveBounceBuffer), Double(0))
-
-        path.move(to: CGPoint(x: from.0, y: from.1))
-        path.addCurve(to: CGPoint(x: from.0 + width * W_M2, y: from.1 + height * H_M2),
-              controlPoint1: CGPoint(x: from.0 + width * W_M1, y: from.1),
-              controlPoint2: CGPoint(x: from.0 + width * W_M3, y: from.1 + height * H_M1))
-
-        path.addCurve(to: CGPoint(x: from.0 + width, y: from.1 + height),
-              controlPoint1: CGPoint(x: from.0 + width * W_M4, y: from.1 + height * H_M3),
-              controlPoint2: CGPoint(x: from.0 + width * W_M5, y: from.1 + height * H_M4))
-    }
-
-    fileprivate func getPath() -> UIBezierPath {
-        let path = UIBezierPath()
-        self.drawFromTop(path)
-        path.addLine(to: CGPoint(x: self.frame.width, y: UIConstants.ToolbarHeight))
-        path.addLine(to: CGPoint(x: self.frame.width, y: 0))
-        path.addLine(to: CGPoint(x: 0, y: 0))
-        path.close()
-        return path
-    }
-
-    override func draw(_ rect: CGRect) {
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        context.saveGState()
-        context.clear(rect)
-        context.setFillColor(URLBarViewUX.backgroundColorWithAlpha(1).cgColor)
-        getPath().fill()
-        leftCurvePath.fill()
-        context.drawPath(using: CGPathDrawingMode.fill)
-        context.restoreGState()
     }
 }
 
