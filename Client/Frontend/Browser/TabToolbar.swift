@@ -248,7 +248,7 @@ class TabToolbar: Toolbar, TabToolbarProtocol {
         menuButton = ToolbarButton()
         menuButton.accessibilityIdentifier = "TabToolbar.menuButton"
         homePageButton = ToolbarButton()
-        menuButton.accessibilityIdentifier = "TabToolbar.homePageButton"
+        homePageButton.accessibilityIdentifier = "TabToolbar.homePageButton"
         actionButtons = [backButton, forwardButton, menuButton, stopReloadButton, shareButton, homePageButton]
 
         super.init(frame: frame)

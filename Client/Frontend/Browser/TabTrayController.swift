@@ -124,7 +124,7 @@ class TabCell: UICollectionViewCell {
         self.titleText.font = DynamicFontHelper.defaultHelper.DefaultSmallFontBold
 
         self.closeButton = UIButton()
-        self.closeButton.setImage(UIImage(named: "nav-stop"), for: UIControlState())
+        self.closeButton.setImage(UIImage.templateImageNamed("nav-stop"), for: UIControlState())
         self.closeButton.tintColor = UIColor.lightGray
         self.closeButton.imageEdgeInsets = UIEdgeInsets(equalInset: TabTrayControllerUX.CloseButtonEdgeInset)
 
@@ -156,6 +156,7 @@ class TabCell: UICollectionViewCell {
         case .light:
             title = UIVisualEffectView(effect: UIBlurEffect(style: .extraLight))
             self.titleText.textColor = LightTabCellUX.TabTitleTextColor
+            //self.closeButton
         case .dark:
             title = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
             self.titleText.textColor = DarkTabCellUX.TabTitleTextColor
@@ -871,6 +872,7 @@ fileprivate class TabManagerDataSource: NSObject, UICollectionViewDataSource {
         let tab = tabs[indexPath.item]
         tabCell.style = tab.isPrivate ? .dark : .light
         tabCell.titleText.text = tab.displayTitle
+        tabCell.closeButton.tintColor = tab.isPrivate ? UIColor.white : UIColor.gray
 
         if !tab.displayTitle.isEmpty {
             tabCell.accessibilityLabel = tab.displayTitle
@@ -897,7 +899,6 @@ fileprivate class TabManagerDataSource: NSObject, UICollectionViewDataSource {
                 tabCell.favicon.image = defaultFavicon
             }
         }
-
         tabCell.background.image = tab.screenshot
         return tabCell
     }
