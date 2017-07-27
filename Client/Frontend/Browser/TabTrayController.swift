@@ -1195,17 +1195,9 @@ extension TabTrayController: MenuActionDelegate {
 class TrayToolbar: UIView {
     fileprivate let toolbarButtonSize = CGSize(width: 44, height: 44)
 
-    lazy var settingsButton: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage.templateImageNamed("settings"), for: .normal)
-        button.accessibilityLabel = NSLocalizedString("Settings", comment: "Accessibility label for the Settings button in the Tab Tray.")
-        button.accessibilityIdentifier = "TabTrayController.settingsButton"
-        return button
-    }()
-
     lazy var addTabButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage.templateImageNamed("add"), for: .normal)
+        button.setImage(UIImage.templateImageNamed("nav-add"), for: .normal)
         button.accessibilityLabel = NSLocalizedString("Add Tab", comment: "Accessibility label for the Add Tab button in the Tab Tray.")
         button.accessibilityIdentifier = "TabTrayController.addTabButton"
         return button
