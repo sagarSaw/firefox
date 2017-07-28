@@ -142,9 +142,7 @@ class ThirdPartySearchTest: BaseTestCase {
         app.typeText("Feeling Lucky")
         app.textViews["customEngineUrl"].tap()
         app.typeText("http://www.google.com/search?q=%s&btnI")
-        
         app.navigationBars.buttons["customEngineSaveButton"].tap()
-
         waitforExistence(app.navigationBars["Search"])
         XCTAssert(app.navigationBars["Search"].buttons["Settings"].exists)
 
