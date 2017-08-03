@@ -42,7 +42,12 @@ class SyncUITests: BaseTestCase {
         }
         app.secureTextFields["Password"].tap()
         app.secureTextFields["Password"].typeText("mozillafirfox611")
-        app.buttons["Sign in"].tap()
+        
+        if iPad() {
+            app.secureTextFields["Password"].typeText("\r")
+        } else {
+            app.buttons["Sign in"].tap()
+        }
         
         sleep(1)
         app.tap()
@@ -52,7 +57,7 @@ class SyncUITests: BaseTestCase {
         if settingsBackButton.exists {
             settingsBackButton.tap()
         }
-        
+
         //Delay for syncing the data from synced devices
         sleep(10)
         waitforExistence(app.staticTexts["Sync Now"])
@@ -110,4 +115,9 @@ class SyncUITests: BaseTestCase {
         app.tables["Bookmarks List"].staticTexts["Unsorted Bookmarks"].tap()
         XCTAssertTrue(app.staticTexts["Apple"].exists, "Apple")
     }
+    
+    func testSample() {
+            
+    }
+    
 }
