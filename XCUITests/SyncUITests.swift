@@ -115,9 +115,4 @@ class SyncUITests: BaseTestCase {
         app.tables["Bookmarks List"].staticTexts["Unsorted Bookmarks"].tap()
         XCTAssertTrue(app.staticTexts["Apple"].exists, "Apple")
     }
-    
-    func testSample() {
-            
-    }
-    
 }
