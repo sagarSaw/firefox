@@ -149,7 +149,7 @@ struct AppMenuConfiguration: MenuConfiguration {
             if HomePageAccessors.isButtonInMenu(appState) && HomePageAccessors.hasHomePage(appState) {
                 menuItems.append(AppMenuConfiguration.OpenHomePageMenuItem)
             }
-            if NoImageModeHelper.isNoImageModeAvailable(appState) {
+            if NoImageModeHelper.isNoImageModeAvailable() {
                 if NoImageModeHelper.isNoImageModeActivated(appState) {
                     menuItems.append(AppMenuConfiguration.ShowImageModeMenuItem)
                 } else {
@@ -173,7 +173,7 @@ struct AppMenuConfiguration: MenuConfiguration {
             if HomePageAccessors.isButtonInMenu(appState) && HomePageAccessors.hasHomePage(appState) {
                 menuItems.append(AppMenuConfiguration.OpenHomePageMenuItem)
             }
-            if NoImageModeHelper.isNoImageModeAvailable(appState) {
+            if NoImageModeHelper.isNoImageModeAvailable() {
                 if NoImageModeHelper.isNoImageModeActivated(appState) {
                     menuItems.append(AppMenuConfiguration.ShowImageModeMenuItem)
                 } else {

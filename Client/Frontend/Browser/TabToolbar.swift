@@ -249,13 +249,13 @@ class TabToolbar: Toolbar, TabToolbarProtocol {
         menuButton.accessibilityIdentifier = "TabToolbar.menuButton"
         homePageButton = ToolbarButton()
         homePageButton.accessibilityIdentifier = "TabToolbar.homePageButton"
-        actionButtons = [backButton, forwardButton, menuButton, stopReloadButton, shareButton, homePageButton]
+        actionButtons = [backButton, forwardButton, stopReloadButton, shareButton, menuButton]
 
         super.init(frame: frame)
 
         self.helper = TabToolbarHelper(toolbar: self)
 
-        addButtons(backButton, forwardButton, menuButton, stopReloadButton, shareButton, homePageButton)
+        addButtons(backButton, forwardButton, stopReloadButton, shareButton, menuButton)
 
         accessibilityNavigationStyle = .combined
         accessibilityLabel = NSLocalizedString("Navigation Toolbar", comment: "Accessibility label for the navigation toolbar displayed at the bottom of the screen.")
@@ -333,15 +333,12 @@ extension TabToolbar: Themeable {
 extension TabToolbar: AppStateDelegate {
     func appDidUpdateState(_ state: AppState) {
         let showHomepage = !HomePageAccessors.isButtonInMenu(state)
-        homePageButton.removeFromSuperview()
-        shareButton.removeFromSuperview()
+    //    shareButton.removeFromSuperview()
 
-        if showHomepage {
-            homePageButton.isEnabled = HomePageAccessors.isButtonEnabled(state)
-            addButtons(homePageButton)
-        } else {
-            addButtons(shareButton)
-        }
+//        if showHomepage {
+//        } else {
+//            addButtons(shareButton)
+//        }
         updateConstraints()
     }
 }
